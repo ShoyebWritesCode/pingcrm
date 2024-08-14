@@ -3,31 +3,49 @@
 namespace App\Http\Controllers;
 
 use App\Models\Organization;
+use App\Models\Settings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Http\Request as HttpRequest;
 
 class OrganizationsController extends Controller
 {
     public function index(): Response
     {
+        $userId = Auth::user()->id;
+        $path = "org/column/{$userId}";
+        $settings = Settings::where('path', $path)->first();
+        $visibleColumns = $settings ? json_decode($settings->value, true) : [];
+
+        $allColumns = Organization::allColumns();
+
+        $columnsToSelect = array_intersect($allColumns, $visibleColumns);
+
+        if (!in_array('id', $columnsToSelect)) {
+            $columnsToSelect[] = 'id';
+        }
+
+        if (empty($visibleColumns) || empty($columnsToSelect)) {
+            $columnsToSelect = Organization::defaultColumns();
+        }
+
         return Inertia::render('Organizations/Index', [
+            'visibleColumns' => $visibleColumns,
             'filters' => Request::all('search', 'trashed'),
             'organizations' => Auth::user()->account->organizations()
+                ->select($columnsToSelect)
                 ->orderBy('name')
                 ->filter(Request::only('search', 'trashed'))
-                ->paginate(10)
+                ->paginate(25)
                 ->withQueryString()
-                ->through(fn ($organization) => [
-                    'id' => $organization->id,
-                    'name' => $organization->name,
-                    'phone' => $organization->phone,
-                    'city' => $organization->city,
-                    'deleted_at' => $organization->deleted_at,
-                ]),
+                ->through(
+                    fn($organization) =>
+                    $organization->only($columnsToSelect)
+                ),
         ]);
     }
 
@@ -103,5 +121,18 @@ class OrganizationsController extends Controller
         $organization->restore();
 
         return Redirect::back()->with('success', 'Organization restored.');
+    }
+
+    public function saveColumnVisibility(HttpRequest $request): RedirectResponse
+    {
+        $userId = Auth::user()->id;
+        $path = "org/column/{$userId}";
+
+        $settings = Settings::updateOrCreate(
+            ['path' => $path],
+            ['value' => json_encode($request->input('columns'))]
+        );
+
+        return Redirect::back();
     }
 }
