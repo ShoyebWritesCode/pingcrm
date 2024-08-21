@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Contact;
 use App\Models\Organization;
+use App\Models\ContactCustomColumns;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Events\CustomColumnsUpdated;
 
 class ContactsController extends Controller
 {
@@ -19,6 +21,7 @@ class ContactsController extends Controller
         return Inertia::render('Contacts/Index', [
             'filters' => Request::all('search', 'trashed'),
             'organizations' => Organization::all(),
+            'additionalColumns' => Auth::user()->account->contactCustomColumns()->get(),
             'contacts' => Auth::user()->account->contacts()
                 ->with('organization')
                 ->orderByName()
@@ -32,6 +35,7 @@ class ContactsController extends Controller
                     'city' => $contact->city,
                     'deleted_at' => $contact->deleted_at,
                     'organization' => $contact->organization ? $contact->organization->only('name') : null,
+                    'additional_data' => $contact->additional_data,
                 ]),
         ]);
     }
@@ -92,6 +96,9 @@ class ContactsController extends Controller
                 ->get()
                 ->map
                 ->only('id', 'name'),
+
+            'customColumns' => Auth::user()->account->contactCustomColumns()->get(),
+            'customData' => $contact->contactsCustomData()->get()->map->only('column_id', 'value'),
         ]);
     }
 
@@ -162,5 +169,40 @@ class ContactsController extends Controller
         }
 
         return Redirect::route('contacts')->with('success', 'Contacts imported.');
+    }
+
+    public function addColumn()
+    {
+        $column = Request::validate([
+            'name' => ['required', 'max:50'],
+            'type' => ['required', 'in:string,number,date'],
+        ]);
+
+        if (Auth::user()->account->contactCustomColumns()->where('name', $column['name'])->exists()) {
+            return Redirect::back()->with('error', 'Column already exists.');
+        } else {
+
+            Auth::user()->account->contactCustomColumns()->create($column);
+
+            return Redirect::back()->with('success', 'Column added.');
+        }
+    }
+
+    public function updateCustomColumns(Contact $contact): RedirectResponse
+    {
+        $columns = Request::input('columns');
+
+        foreach ($columns as $column) {
+            if (isset($column['value']) && $column['value'] !== null) {
+                $contact->contactsCustomData()->updateOrCreate(
+                    ['column_id' => $column['id']],
+                    ['value' => $column['value']]
+                );
+            }
+        }
+
+        event(new CustomColumnsUpdated($contact, $columns));
+
+        return Redirect::back()->with('success', 'Contact updated.');
     }
 }

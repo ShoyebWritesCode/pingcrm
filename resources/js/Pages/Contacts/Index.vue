@@ -13,6 +13,38 @@
         </select>
       </search-filter>
       <div>
+        <button @click="showModal = true" class="btn-indigo mx-4 px-3 py-2" title="Add New Columns">
+          <font-awesome-icon icon="table-cells" />
+        </button>
+        <div v-if="showModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
+          <div class="bg-white rounded-lg shadow-lg p-4 w-72">
+            <h2 class="text-xl font-bold mb-4">Add New Columns</h2>
+            <div class="flex flex-col">
+              <div class="flex items-center justify-between">
+                <label for="name" class="block text-sm font-medium text-gray-700">Column Name</label>
+                <input type="text" id="name"
+                  class="mt-1 block w-1/2 py-1  px-2 text-base border-2 border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" />
+              </div>
+              <div class="flex items-center justify-between mt-4">
+                <label for="type" class="block text-sm font-medium text-gray-700">Data Type</label>
+                <select id="type"
+                  class="mt-1 block w-1/2 py-1 border-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                  <option>string</option>
+                  <option>number</option>
+                  <option>date</option>
+                  <option>boolean</option>
+                </select>
+              </div>
+            </div>
+
+
+
+            <div class="flex justify-end mt-6">
+              <button @click="applyChanges" class="btn-green px-4 py-2">Apply</button>
+              <button @click="showModal = false" class="ml-4 btn-red px-4 py-2">Cancel</button>
+            </div>
+          </div>
+        </div>
         <button class="btn-indigo mr-4  px-3 py-2" title="Import CSV" @click="triggerFileInput">
           <font-awesome-icon icon="file-import" />
         </button>
@@ -25,35 +57,37 @@
             <button @click="handleCancel" class="absolute top-2 right-2 bg-transparent px-3 py-1 mr-2" title="Go Back">
               <font-awesome-icon icon="xmark" class="text-black" />
             </button>
+            <div class="overflow-y-auto max-h-64">
+              <table class="w-full table-auto border-collapse">
+                <thead>
+                  <tr>
+                    <th class="border font-bold text-left p-2">CSV Column</th>
+                    <th class="border font-bold text-left p-2">DB Column</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="csvColumn in csvColumns" :key="csvColumn" :class="{
+                    'bg-green-500': matchingColumn(csvColumn),
+                    'bg-yellow-500': !matchingColumn(csvColumn)
+                  }">
+                    <td class="border p-2">{{ csvColumn }}</td>
+                    <td class="border p-2 w-1/2">
+                      <select v-model="selectedDbColumns[csvColumn]"
+                        style="width: 120px; background-color:transparent;">
+                        <option v-if="matchingColumn(csvColumn)">
+                          {{ matchingColumn(csvColumn).name }}
+                        </option>
+                        <option v-else v-for="dbColumn in availableDbColumns(csvColumn)" :key="dbColumn.name"
+                          :value="dbColumn.name">
+                          {{ dbColumn.name }}
+                        </option>
+                      </select>
 
-            <table class="w-full table-auto border-collapse">
-              <thead>
-                <tr>
-                  <th class="border font-bold text-left p-2">CSV Column</th>
-                  <th class="border font-bold text-left p-2">DB Column</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="csvColumn in csvColumns" :key="csvColumn" :class="{
-                  'bg-green-500': matchingColumn(csvColumn),
-                  'bg-yellow-500': !matchingColumn(csvColumn)
-                }">
-                  <td class="border p-2">{{ csvColumn }}</td>
-                  <td class="border p-2 w-1/2">
-                    <select v-model="selectedDbColumns[csvColumn]" style="width: 120px; background-color:transparent;">
-                      <option v-if="matchingColumn(csvColumn)">
-                        {{ matchingColumn(csvColumn).name }}
-                      </option>
-                      <option v-else v-for="dbColumn in availableDbColumns(csvColumn)" :key="dbColumn.name"
-                        :value="dbColumn.name">
-                        {{ dbColumn.name }}
-                      </option>
-                    </select>
-
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
             <div class="flex justify-end mt-6">
               <button @click="handleCancel" class="btn-red px-4 py-2">Cancel</button>
@@ -78,7 +112,7 @@
                     <th v-for="csvColumn in csvColumns" :key="csvColumn" class="border-b font-bold text-left p-2">
                       <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">{{
                         matchingColumn(csvColumn) ? matchingColumn(csvColumn).name : selectedDbColumns[csvColumn]
-                        }}</span>
+                      }}</span>
                     </th>
                   </tr>
                 </thead>
@@ -87,7 +121,7 @@
                     <td v-for="csvColumn in csvColumns" :key="csvColumn" class="border-b p-2">
                       <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">{{
                         getValueForColumn(row, csvColumn) !== 'N/A' ? getValueForColumn(row, csvColumn) : ''
-                        }}</span>
+                      }}</span>
                     </td>
                   </tr>
                 </tbody>
@@ -126,7 +160,8 @@
           <th class="pb-4 pt-6 px-6">Name</th>
           <th class="pb-4 pt-6 px-6">Organization</th>
           <th class="pb-4 pt-6 px-6">City</th>
-          <th class="pb-4 pt-6 px-6" colspan="2">Phone</th>
+          <th class="pb-4 pt-6 px-6">Phone</th>
+          <th v-for="column in additionalColumns" :key="column.id" class="pb-4 pt-6 px-6">{{ column.name }}</th>
         </tr>
         <tr v-for="contact in contacts.data" :key="contact.id" class="hover:bg-gray-100 focus-within:bg-gray-100">
           <td class="border-t">
@@ -150,6 +185,11 @@
           <td class="border-t">
             <Link class="flex items-center px-6 py-4" :href="`/contacts/${contact.id}/edit`" tabindex="-1">
             {{ contact.phone }}
+            </Link>
+          </td>
+          <td v-for="column in additionalColumns" :key="column.id" class="border-t">
+            <Link class="flex items-center px-6 py-4" :href="`/contacts/${contact.id}/edit`" tabindex="-1">
+            {{ getValue(column.name, contact) }}
             </Link>
           </td>
           <td class="w-px border-t">
@@ -177,6 +217,7 @@ import mapValues from 'lodash/mapValues'
 import Pagination from '@/Shared/Pagination.vue'
 import SearchFilter from '@/Shared/SearchFilter.vue'
 import Papa from 'papaparse'
+import { get } from 'lodash'
 
 export default {
   components: {
@@ -190,7 +231,8 @@ export default {
   props: {
     filters: Object,
     contacts: Object,
-    organizations: Object
+    organizations: Object,
+    additionalColumns: Object,
   },
   data() {
     return {
@@ -198,6 +240,7 @@ export default {
         search: this.filters.search,
         trashed: this.filters.trashed,
       },
+      showModal: false,
       showCsvModal: false,
       PreviewModal: false,
       csvData: [],
@@ -305,6 +348,30 @@ export default {
     handleCancel() {
       window.location.reload()
     },
+
+    applyChanges() {
+      const name = document.getElementById('name').value;
+      const type = document.getElementById('type').value;
+
+      this.$inertia.post('/contacts/add-column', { name, type }, {
+        onSuccess: () => {
+          this.showModal = false;
+          window.location.reload();
+        },
+        onError: (error) => {
+          console.error("Error occurred while adding column:", error);
+        }
+      });
+
+    },
+
+    getValue(columnName, contact) {
+      // Ensure additional_data is parsed or initialized
+      const additionalData = JSON.parse(contact.additional_data || '{}');
+
+      // Return the value for the specified column name, or an empty string if the key doesn't exist
+      return additionalData[columnName] || '';
+    }
 
   },
 }
