@@ -13,13 +13,9 @@
         </select>
       </search-filter>
       <div>
-        <!-- Button to trigger the modal -->
-        <button @click="showModal = true" class="btn-indigo-light ml-24 px-4">
-          <font-awesome-icon icon="table-cells" fade />
-          Visible Columns
+        <button @click="showModal = true" class="btn-indigo mx-4 px-3 py-2" title="Visible Columns">
+          <font-awesome-icon icon="table-cells" />
         </button>
-
-        <!-- Modal pop-up -->
         <div v-if="showModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
           <div class="bg-white rounded-lg shadow-lg p-6 w-96">
             <h2 class="text-xl font-bold mb-4">Select Columns</h2>
@@ -38,11 +34,107 @@
           </div>
         </div>
 
+        <button class="btn-indigo mr-4  px-3 py-2" title="Import CSV" @click="triggerFileInput">
+          <font-awesome-icon icon="file-import" />
+        </button>
+        <input type="file" ref="fileInput" accept=".csv" @change="handleFileUpload" style="display: none;" />
+
+        <div v-if="showCsvModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
+          <div class="bg-white rounded-lg shadow-lg p-6 w-1/3 max-w-4xl relative">
+
+            <h2 class="text-xl font-bold mb-4">CSV Columns</h2>
+            <button @click="handleCancel" class="absolute top-2 right-2 bg-transparent px-3 py-1 mr-2" title="Go Back">
+              <font-awesome-icon icon="xmark" class="text-black" />
+            </button>
+
+            <table class="w-full table-auto border-collapse">
+              <thead>
+                <tr>
+                  <th class="border font-bold text-left p-2">CSV Column</th>
+                  <th class="border font-bold text-left p-2">DB Column</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="csvColumn in csvColumns" :key="csvColumn" :class="{
+                  'bg-green-500': matchingColumn(csvColumn),
+                  'bg-yellow-500': !matchingColumn(csvColumn)
+                }">
+                  <td class="border p-2">{{ csvColumn }}</td>
+                  <td class="border p-2 w-1/2">
+                    <select v-model="selectedDbColumns[csvColumn]" style="width: 120px; background-color:transparent;">
+                      <option v-if="matchingColumn(csvColumn)">
+                        {{ matchingColumn(csvColumn).name }}
+                      </option>
+                      <option v-else v-for="dbColumn in availableDbColumns(csvColumn)" :key="dbColumn.name"
+                        :value="dbColumn.name">
+                        {{ dbColumn.name }}
+                      </option>
+                    </select>
+
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="flex justify-end mt-6">
+              <button @click="handleCancel" class="btn-red px-4 py-2">Cancel</button>
+              <button @click="applyCsvChanges" class="ml-4 btn-green px-4 py-2">Continue</button>
+
+            </div>
+          </div>
+        </div>
+
+        <div v-if="PreviewModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
+          <div class="bg-white rounded-lg shadow-lg p-6 w-auto min-h-1/2 max-w-4xl relative">
+            <!-- Back Button -->
+            <button @click="handleCancel" class="absolute top-2 right-2 bg-transparent px-3 py-1 mr-2">
+              <font-awesome-icon icon="xmark" class="text-black" />
+            </button>
+            <h2 class="text-xl font-bold mb-4">Preview Data <span class="text-xs">(Upto 100 Rows)</span></h2>
+            <!-- Preview Table -->
+            <div class="bg-white rounded-md shadow overflow-x-auto max-h-64">
+              <table class="w-full table-auto border-collapse">
+                <thead>
+                  <tr>
+                    <th v-for="csvColumn in csvColumns" :key="csvColumn" class="border-b font-bold text-left p-2">
+                      <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">{{
+                        matchingColumn(csvColumn) ? matchingColumn(csvColumn).name : selectedDbColumns[csvColumn]
+                      }}</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(row, rowIndex) in csvData.slice(0, 100)" :key="rowIndex">
+                    <td v-for="csvColumn in csvColumns" :key="csvColumn" class="border-b p-2">
+                      <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">{{
+                        getValueForColumn(row, csvColumn) !== 'N/A' ? getValueForColumn(row, csvColumn) : ''
+                        }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+            </div>
+            <!-- Buttons -->
+            <div class="flex justify-end mt-6">
+              <button @click="goBack" class="btn-yellow px-4 py-2 mr-auto">
+                Back
+              </button>
+
+              <button @click="handleCancel" class="ml-4 btn-red px-4 py-2">Cancel</button>
+              <button @click="applyPreviewChanges" class="btn-green px-4 py-2 ml-4">Import</button>
+            </div>
+          </div>
+        </div>
+
+        <button @click="downloadCSV" class="btn-indigo  px-3 py-2" title="Export as CSV">
+          <font-awesome-icon icon="file-export" />
+        </button>
+
+        <Link class="btn-indigo mx-4  px-3 py-2" href="/organizations/create" title="Create Organization">
+        <font-awesome-icon icon="plus" />
+        </Link>
       </div>
-      <Link class="btn-indigo" href="/organizations/create">
-      <span>Create</span>
-      <span class="hidden md:inline">&nbsp;Organization</span>
-      </Link>
     </div>
     <div class="bg-white rounded-md shadow overflow-x-auto max-h-96">
       <table class="w-full whitespace-nowrap">
@@ -92,6 +184,8 @@ import mapValues from 'lodash/mapValues'
 import Pagination from '@/Shared/Pagination.vue'
 import SearchFilter from '@/Shared/SearchFilter.vue'
 import draggable from 'vuedraggable'
+import Papa from 'papaparse'
+import { data } from 'autoprefixer'
 
 export default {
   components: {
@@ -115,6 +209,8 @@ export default {
         trashed: this.filters.trashed,
       },
       showModal: false,
+      showCsvModal: false,
+      PreviewModal: false,
       columns: [
         { name: 'name', label: 'Name', visible: this.visibleColumns.includes('name') || true, disabled: true },
         { name: 'phone', label: 'Phone', visible: this.visibleColumns.includes('phone') || true, disabled: true },
@@ -125,7 +221,9 @@ export default {
         { name: 'country', label: 'Country', visible: this.visibleColumns.includes('country') },
         { name: 'postal_code', label: 'Postal Code', visible: this.visibleColumns.includes('postal_code') },
       ],
-
+      csvColumns: [],
+      selectedDbColumns: {},
+      csvData: []
     }
   },
   watch: {
@@ -155,6 +253,119 @@ export default {
         columns: selectedColumns,
       });
     },
+    triggerFileInput() {
+      this.$refs.fileInput.click();
+    },
+    handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        Papa.parse(file, {
+          header: true,
+          complete: (results) => {
+            console.log("CSV file contents:", results.meta.fields);
+            this.csvColumns = results.meta.fields;
+            this.csvData = results.data;
+            this.showCsvModal = true
+            console.log(this.csvData)
+          },
+          error: (error) => {
+            console.error("Error parsing CSV file:", error);
+          }
+        });
+      }
+    },
+    matchingColumn(csvColumn) {
+      return this.columns.find(col => col.name === csvColumn);
+    },
+    availableDbColumns(csvColumn) {
+      const selected = new Set(Object.values(this.selectedDbColumns));
+      return this.columns.filter(col => !selected.has(col.name) || col.name === this.selectedDbColumns[csvColumn]);
+    },
+
+    mapCsvToDbColumns() {
+      return this.csvData.map(row => {
+        let mappedRow = {};
+        for (let csvColumn of this.csvColumns) {
+          let dbColumn = this.selectedDbColumns[csvColumn];
+          if (dbColumn) {
+            mappedRow[dbColumn] = row[csvColumn];
+          }
+        }
+        return mappedRow;
+      });
+    },
+
+    applyCsvChanges() {
+      const dataToInsert = this.mapCsvToDbColumns();
+      console.log(dataToInsert)
+      this.showCsvModal = false
+      this.PreviewModal = true
+    },
+
+    getValueForColumn(row, csvColumn) {
+      return row[csvColumn] || 'N/A';
+    },
+
+    async applyPreviewChanges() {
+      const dataToInsert = this.mapCsvToDbColumns();
+      console.log(dataToInsert)
+
+      this.$inertia.post('/organizations/import-csv', { data: dataToInsert }, {
+        onSuccess: () => {
+          this.PreviewModal = false;
+          window.location.reload();
+        },
+        onError: (error) => {
+          console.error("Error occurred while processing data:", error);
+        }
+      });
+
+    },
+
+    goBack() {
+      this.PreviewModal = false;
+      this.showCsvModal = true;
+    },
+    handleCancel() {
+      window.location.reload();
+    },
+
+
+    //export as csv
+    convertToCSV(data, columns) {
+      const header = columns
+        .filter(column => this.isVisible(column.name))
+        .map(column => column.label)
+        .join(',');
+
+      const rows = data.map(row =>
+        columns
+          .filter(column => this.isVisible(column.name))
+          .map(column => `"${row[column.name] || ''}"`)
+          .join(',')
+      );
+
+      return [header, ...rows].join('\n');
+    },
+
+    downloadCSV() {
+      const csv = this.convertToCSV(this.organizations.data, this.columns);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'organizations.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    },
+
+
   },
+
 }
 </script>

@@ -101,6 +101,10 @@ Route::put('organizations/{organization}/restore', [OrganizationsController::cla
     ->name('organizations.restore')
     ->middleware('auth');
 
+Route::post('organizations/import-csv', [OrganizationsController::class, 'importCsv'])
+    ->name('organizations.import-csv')
+    ->middleware('auth');
+
 // Contacts
 
 Route::get('contacts', [ContactsController::class, 'index'])
@@ -129,6 +133,11 @@ Route::delete('contacts/{contact}', [ContactsController::class, 'destroy'])
 
 Route::put('contacts/{contact}/restore', [ContactsController::class, 'restore'])
     ->name('contacts.restore')
+    ->middleware('auth');
+
+
+Route::post('contacts/import-csv', [ContactsController::class, 'importCsv'])
+    ->name('contacts.import-csv')
     ->middleware('auth');
 
 // Reports

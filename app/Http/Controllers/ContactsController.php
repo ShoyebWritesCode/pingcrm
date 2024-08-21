@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use App\Models\Organization;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
@@ -17,13 +18,14 @@ class ContactsController extends Controller
     {
         return Inertia::render('Contacts/Index', [
             'filters' => Request::all('search', 'trashed'),
+            'organizations' => Organization::all(),
             'contacts' => Auth::user()->account->contacts()
                 ->with('organization')
                 ->orderByName()
                 ->filter(Request::only('search', 'trashed'))
                 ->paginate(10)
                 ->withQueryString()
-                ->through(fn ($contact) => [
+                ->through(fn($contact) => [
                     'id' => $contact->id,
                     'name' => $contact->name,
                     'phone' => $contact->phone,
@@ -101,7 +103,7 @@ class ContactsController extends Controller
                 'last_name' => ['required', 'max:50'],
                 'organization_id' => [
                     'nullable',
-                    Rule::exists('organizations', 'id')->where(fn ($query) => $query->where('account_id', Auth::user()->account_id)),
+                    Rule::exists('organizations', 'id')->where(fn($query) => $query->where('account_id', Auth::user()->account_id)),
                 ],
                 'email' => ['nullable', 'max:50', 'email'],
                 'phone' => ['nullable', 'max:50'],
@@ -128,5 +130,37 @@ class ContactsController extends Controller
         $contact->restore();
 
         return Redirect::back()->with('success', 'Contact restored.');
+    }
+
+    public function importCsv(): RedirectResponse
+    {
+        $data = Request::input('data');
+
+        $filteredData = array_filter($data, function ($row) {
+            if (empty($row['name'])) {
+                return false;
+            }
+
+            foreach ($row as $key => $value) {
+                if ($key !== 'name' && ($value === null || $value === 'N/A')) {
+                    $row[$key] = null;
+                }
+            }
+
+            return true;
+        });
+
+        foreach ($filteredData as $row) {
+            auth()->user()->account->contacts()->create([
+                'first_name' => explode(' ', $row['name'])[0],
+                'last_name' => explode(' ', $row['name'])[1],
+                'phone' => $row['phone'] ?? null,
+                'city' => $row['city'] ?? null,
+                'organization_id' => $row['organization_id'] ?? null,
+
+            ]);
+        }
+
+        return Redirect::route('contacts')->with('success', 'Contacts imported.');
     }
 }
