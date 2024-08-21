@@ -377,7 +377,7 @@ export default {
 
       // Return the value for the specified column name, or an empty string if the key doesn't exist
       return additionalData[columnName] || '';
-    }
+    },
 
   },
 }
