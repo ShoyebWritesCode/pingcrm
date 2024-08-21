@@ -52,13 +52,14 @@
 
         <div v-if="showCsvModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
           <div
-            class="bg-white rounded-lg shadow-lg p-6 w-auto min-w-[60vh] min-h-[45vh] max-h-[90vh] max-w-4xl relative">
+            class="bg-white rounded-lg shadow-lg p-4 w-auto min-w-[60vh] min-h-[45vh] max-h-[90vh] max-w-4xl relative">
 
-            <h2 class="text-xl font-bold mb-4">CSV Columns</h2>
-            <button @click="handleCancel" class="absolute top-2 right-2 bg-transparent px-3 py-1 mr-2" title="Go Back">
+            <h2 class="text-xl font-bold mb-2">CSV Columns</h2>
+            <hr class="border-t-1 border-gray-300 mb-4">
+            <button @click="handleCancel" class="absolute top-2 right-2 bg-transparent px-3 py-3 mr-2" title="Go Back">
               <font-awesome-icon icon="xmark" class="text-black" />
             </button>
-            <div class="overflow-y-auto max-h-64">
+            <div class="overflow-y-auto max-h-96">
               <table class="w-full table-auto border-collapse">
                 <thead>
                   <tr>
@@ -90,7 +91,8 @@
               </table>
             </div>
 
-            <div class="flex justify-end mt-6">
+            <hr class="border-t-1 border-gray-300 mt-4">
+            <div class="flex justify-end mt-2">
               <button @click="handleCancel" class="btn-red px-4 py-2">Cancel</button>
               <button @click="applyCsvChanges" class="ml-4 btn-green px-4 py-2">Continue</button>
 
@@ -100,12 +102,13 @@
 
         <div v-if="PreviewModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
           <div
-            class="bg-white rounded-lg shadow-lg p-6 w-auto min-w-[60vh] min-h-[45vh] max-h-[90vh] max-w-4xl relative">
+            class="bg-white rounded-lg shadow-lg p-4 w-auto min-w-[60vh] min-h-[45vh] max-h-[90vh] max-w-4xl relative">
             <!-- Back Button -->
-            <button @click="handleCancel" class="absolute top-2 right-2 bg-transparent px-3 py-1 mr-2">
+            <button @click="handleCancel" class="absolute top-2 right-2 bg-transparent px-3 py-3 mr-2">
               <font-awesome-icon icon="xmark" class="text-black" />
             </button>
-            <h2 class="text-xl font-bold mb-4">Preview Data <span class="text-xs">(Upto 100 Rows)</span></h2>
+            <h2 class="text-xl font-bold mb-2">Preview Data <span class="text-xs">(Upto 100 Rows)</span></h2>
+            <hr class="border-t-1 border-gray-300 mb-4">
             <!-- Preview Table -->
             <div class="bg-white rounded-md shadow overflow-x-auto max-h-64">
               <table class="w-full table-auto border-collapse">
@@ -114,7 +117,7 @@
                     <th v-for="csvColumn in csvColumns" :key="csvColumn" class="border-b font-bold text-left p-2">
                       <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">{{
                         matchingColumn(csvColumn) ? matchingColumn(csvColumn).name : selectedDbColumns[csvColumn]
-                        }}</span>
+                      }}</span>
                     </th>
                   </tr>
                 </thead>
@@ -123,7 +126,7 @@
                     <td v-for="csvColumn in csvColumns" :key="csvColumn" class="border-b p-2">
                       <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">{{
                         getValueForColumn(row, csvColumn) !== 'N/A' ? getValueForColumn(row, csvColumn) : ''
-                        }}</span>
+                      }}</span>
                     </td>
                   </tr>
                 </tbody>
@@ -141,7 +144,8 @@
               </select>
             </div>
             <!-- Buttons -->
-            <div class="flex justify-end mt-6">
+            <hr class="border-t-1 border-gray-300 mt-4">
+            <div class="flex justify-end mt-2">
               <button @click="goBack" class="btn-yellow px-4 py-2 mr-auto">
                 Back
               </button>
