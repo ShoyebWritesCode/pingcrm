@@ -40,7 +40,8 @@
         <input type="file" ref="fileInput" accept=".csv" @change="handleFileUpload" style="display: none;" />
 
         <div v-if="showCsvModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
-          <div class="bg-white rounded-lg shadow-lg p-6 w-1/3 max-w-4xl relative">
+          <div
+            class="bg-white rounded-lg shadow-lg p-6 w-auto min-w-[60vh] min-h-[75vh] max-h-[90vh] max-w-4xl relative">
 
             <h2 class="text-xl font-bold mb-4">CSV Columns</h2>
             <button @click="handleCancel" class="absolute top-2 right-2 bg-transparent px-3 py-1 mr-2" title="Go Back">
@@ -86,47 +87,45 @@
         </div>
 
         <div v-if="PreviewModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
-          <div class="bg-white rounded-lg shadow-lg p-6 w-auto min-h-1/2 max-w-4xl relative">
+          <div
+            class="bg-white rounded-lg shadow-lg p-6 w-auto min-w-[60vh] min-h-[75vh] max-h-[90vh] max-w-4xl relative">
             <!-- Back Button -->
             <button @click="handleCancel" class="absolute top-2 right-2 bg-transparent px-3 py-1 mr-2">
               <font-awesome-icon icon="xmark" class="text-black" />
             </button>
-            <h2 class="text-xl font-bold mb-4">Preview Data <span class="text-xs">(Upto 100 Rows)</span></h2>
+            <h2 class="text-xl font-bold mb-4">Preview Data <span class="text-xs">(Up to 100 Rows)</span></h2>
             <!-- Preview Table -->
-            <div class="bg-white rounded-md shadow overflow-x-auto max-h-64">
+            <div class="bg-white rounded-md shadow overflow-x-auto max-h-[60vh]">
               <table class="w-full table-auto border-collapse">
                 <thead>
                   <tr>
                     <th v-for="csvColumn in csvColumns" :key="csvColumn" class="border-b font-bold text-left p-2">
-                      <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">{{
-                        matchingColumn(csvColumn) ? matchingColumn(csvColumn).name : selectedDbColumns[csvColumn]
-                        }}</span>
+                      <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">
+                        {{ matchingColumn(csvColumn) ? matchingColumn(csvColumn).name : selectedDbColumns[csvColumn] }}
+                      </span>
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="(row, rowIndex) in csvData.slice(0, 100)" :key="rowIndex">
                     <td v-for="csvColumn in csvColumns" :key="csvColumn" class="border-b p-2">
-                      <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">{{
-                        getValueForColumn(row, csvColumn) !== 'N/A' ? getValueForColumn(row, csvColumn) : ''
-                      }}</span>
+                      <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">
+                        {{ getValueForColumn(row, csvColumn) !== 'N/A' ? getValueForColumn(row, csvColumn) : '' }}
+                      </span>
                     </td>
                   </tr>
                 </tbody>
               </table>
-
             </div>
             <!-- Buttons -->
             <div class="flex justify-end mt-6">
-              <button @click="goBack" class="btn-yellow px-4 py-2 mr-auto">
-                Back
-              </button>
-
+              <button @click="goBack" class="btn-yellow px-4 py-2 mr-auto">Back</button>
               <button @click="handleCancel" class="ml-4 btn-red px-4 py-2">Cancel</button>
               <button @click="applyPreviewChanges" class="btn-green px-4 py-2 ml-4">Import</button>
             </div>
           </div>
         </div>
+
 
         <button @click="downloadCSV" class="btn-indigo  px-3 py-2" title="Export as CSV">
           <font-awesome-icon icon="file-export" />
