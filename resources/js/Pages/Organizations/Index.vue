@@ -41,7 +41,7 @@
 
         <div v-if="showCsvModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
           <div
-            class="bg-white rounded-lg shadow-lg p-6 w-auto min-w-[60vh] min-h-[75vh] max-h-[90vh] max-w-4xl relative">
+            class="bg-white rounded-lg shadow-lg p-6 w-auto min-w-[60vh] min-h-[45vh] max-h-[90vh] max-w-4xl relative">
 
             <h2 class="text-xl font-bold mb-4">CSV Columns</h2>
             <button @click="handleCancel" class="absolute top-2 right-2 bg-transparent px-3 py-1 mr-2" title="Go Back">
@@ -88,7 +88,7 @@
 
         <div v-if="PreviewModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
           <div
-            class="bg-white rounded-lg shadow-lg p-6 w-auto min-w-[60vh] min-h-[75vh] max-h-[90vh] max-w-4xl relative">
+            class="bg-white rounded-lg shadow-lg p-6 w-auto min-w-[60vh] min-h-[45vh] max-h-[90vh] max-w-4xl relative">
             <!-- Back Button -->
             <button @click="handleCancel" class="absolute top-2 right-2 bg-transparent px-3 py-1 mr-2">
               <font-awesome-icon icon="xmark" class="text-black" />
