@@ -131,6 +131,10 @@ Route::put('contacts/{contact}/custom-columns', [ContactsController::class, 'upd
     ->name('contacts.update-custom-columns')
     ->middleware('auth');
 
+Route::delete('contacts/{columnId}/delete', [ContactsController::class, 'deleteCustomColumns'])
+    ->name('contacts.delete-custom-columns')
+    ->middleware('auth');
+
 Route::delete('contacts/{contact}', [ContactsController::class, 'destroy'])
     ->name('contacts.destroy')
     ->middleware('auth');

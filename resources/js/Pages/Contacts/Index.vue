@@ -40,11 +40,30 @@
 
 
             <div class="flex justify-end mt-6">
+              <button @click="editColumn" class="btn-yellow px-4 py-2 mr-8">Edit </button>
               <button @click="applyChanges" class="btn-green px-4 py-2">Apply</button>
               <button @click="showModal = false" class="ml-4 btn-red px-4 py-2">Cancel</button>
             </div>
           </div>
         </div>
+
+        <div v-if="editColumnModal"
+          class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
+          <div class="bg-white rounded-lg shadow-lg p-4 w-72">
+            <h2 class="text-xl font-bold mb-4">Edit Columns</h2>
+            <div v-for="column in additionalColumns" :key="column.id" class="mb-4 flex items-center justify-between">
+              <span>{{ column.name }}</span>
+              <div class="flex space-x-2">
+                <button @click="renameColumn(column.id)" class="btn-yellow px-4 py-2">Rename</button>
+                <button @click="deleteColumn(column.id)" class="btn-red px-4 py-2">Delete</button>
+              </div>
+            </div>
+            <div class="flex justify-end mt-6">
+              <button @click="editColumnModal = false" class="btn-red px-4 py-2">Close</button>
+            </div>
+          </div>
+        </div>
+
         <button class="btn-indigo mr-4  px-3 py-2" title="Import CSV" @click="triggerFileInput">
           <font-awesome-icon icon="file-import" />
         </button>
@@ -249,6 +268,7 @@ export default {
       showModal: false,
       showCsvModal: false,
       PreviewModal: false,
+      editColumnModal: false,
       csvData: [],
       csvColumns: [],
       selectedDbColumns: {},
@@ -270,6 +290,10 @@ export default {
     },
   },
   methods: {
+    editColumn() {
+      this.showModal = false,
+        this.editColumnModal = true
+    },
     reset() {
       this.form = mapValues(this.form, () => null)
     },
@@ -378,6 +402,18 @@ export default {
       // Return the value for the specified column name, or an empty string if the key doesn't exist
       return additionalData[columnName] || '';
     },
+
+    deleteColumn(columnId) {
+      this.$inertia.delete(`contacts/${columnId}/delete`, {
+        onSuccess: () => {
+          this.editColumnModal = false;
+          window.location.reload();
+        },
+        onError: (error) => {
+          console.error("Error occurred while deleting column:", error);
+        }
+      });
+    }
 
   },
 }

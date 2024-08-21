@@ -205,4 +205,15 @@ class ContactsController extends Controller
 
         return Redirect::back()->with('success', 'Contact updated.');
     }
+
+    public function deleteCustomColumns($columnId): RedirectResponse
+    {
+
+        $column = ContactCustomColumns::find($columnId);
+        if ($column && Auth::user()->account->contactCustomColumns->contains($column)) {
+            $column->delete();
+
+            return Redirect::back()->with('success', 'Column deleted.');
+        }
+    }
 }
