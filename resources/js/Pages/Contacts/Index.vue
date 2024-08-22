@@ -13,7 +13,8 @@
         </select>
       </search-filter>
       <div>
-        <button @click="deleteSelected" class="btn-red mx-4 px-3 py-2" title="Add New Columns">
+        <button v-if="deleteButtonVisibility" @click="deleteSelected" class="btn-red mx-4 px-3 py-2"
+          title="Add New Columns">
           Delete Selected
         </button>
         <button @click="showModal = true" class="btn-indigo mx-4 px-3 py-2" title="Add New Columns">
@@ -283,6 +284,7 @@ export default {
       showCsvModal: false,
       PreviewModal: false,
       editColumnModal: false,
+      // deleteButtonVisibility: false,
       csvData: [],
       csvColumns: [],
       selectedDbColumns: {},
@@ -298,6 +300,11 @@ export default {
         selected: false,
       })),
     }
+  },
+  computed: {
+    deleteButtonVisibility() {
+      return this.selectedContacts.some(contact => contact.selected);
+    },
   },
   watch: {
     form: {
@@ -320,6 +327,7 @@ export default {
             preserveScroll: true,
             onSuccess: () => {
               window.location.reload();
+
             },
           });
 
@@ -335,6 +343,8 @@ export default {
       this.selectedContacts.forEach(contact => {
         contact.selected = isChecked;
       });
+      this.deleteButtonVisibility = isChecked;
+
     },
 
     editColumn() {
