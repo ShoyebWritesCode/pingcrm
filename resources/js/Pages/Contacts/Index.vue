@@ -13,6 +13,9 @@
         </select>
       </search-filter>
       <div>
+        <button @click="deleteSelected" class="btn-red mx-4 px-3 py-2" title="Add New Columns">
+          Delete Selected
+        </button>
         <button @click="showModal = true" class="btn-indigo mx-4 px-3 py-2" title="Add New Columns">
           <font-awesome-icon icon="table-cells" />
         </button>
@@ -181,52 +184,63 @@
     </div>
     <div class="bg-white rounded-md shadow overflow-x-auto">
       <table class="w-full whitespace-nowrap">
-        <tr class="text-left font-bold">
-          <th class="pb-4 pt-6 px-6">Name</th>
-          <th class="pb-4 pt-6 px-6">Organization</th>
-          <th class="pb-4 pt-6 px-6">City</th>
-          <th class="pb-4 pt-6 px-6">Phone</th>
-          <th v-for="column in additionalColumns" :key="column.id" class="pb-4 pt-6 px-6">{{ column.name }}</th>
-        </tr>
-        <tr v-for="contact in contacts.data" :key="contact.id" class="hover:bg-gray-100 focus-within:bg-gray-100">
-          <td class="border-t">
-            <Link class="flex items-center px-6 py-4 focus:text-indigo-500" :href="`/contacts/${contact.id}/edit`">
-            {{ contact.name }}
-            <icon v-if="contact.deleted_at" name="trash" class="shrink-0 ml-2 w-3 h-3 fill-gray-400" />
-            </Link>
-          </td>
-          <td class="border-t">
-            <Link class="flex items-center px-6 py-4" :href="`/contacts/${contact.id}/edit`" tabindex="-1">
-            <div v-if="contact.organization">
-              {{ contact.organization.name }}
-            </div>
-            </Link>
-          </td>
-          <td class="border-t">
-            <Link class="flex items-center px-6 py-4" :href="`/contacts/${contact.id}/edit`" tabindex="-1">
-            {{ contact.city }}
-            </Link>
-          </td>
-          <td class="border-t">
-            <Link class="flex items-center px-6 py-4" :href="`/contacts/${contact.id}/edit`" tabindex="-1">
-            {{ contact.phone }}
-            </Link>
-          </td>
-          <td v-for="column in additionalColumns" :key="column.id" class="border-t">
-            <Link class="flex items-center px-6 py-4" :href="`/contacts/${contact.id}/edit`" tabindex="-1">
-            {{ getValue(column.name, contact) }}
-            </Link>
-          </td>
-          <td class="w-px border-t">
-            <Link class="flex items-center px-4" :href="`/contacts/${contact.id}/edit`" tabindex="-1">
-            <icon name="cheveron-right" class="block w-6 h-6 fill-gray-400" />
-            </Link>
-          </td>
-        </tr>
-        <tr v-if="contacts.data.length === 0">
-          <td class="px-6 py-4 border-t" colspan="4">No contacts found.</td>
-        </tr>
+        <thead>
+          <tr class="text-left font-bold">
+            <th class="pb-4 pt-6 px-4">
+              <input type="checkbox" id="selectAll" @change="toggleSelectAll" />
+            </th>
+            <th class="pb-4 pt-6 px-6">Name</th>
+            <th class="pb-4 pt-6 px-6">Organization</th>
+            <th class="pb-4 pt-6 px-6">City</th>
+            <th class="pb-4 pt-6 px-6">Phone</th>
+            <th v-for="column in additionalColumns" :key="column.id" class="pb-4 pt-6 px-6">{{ column.name }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="contact in selectedContacts" :key="contact.id" class="hover:bg-gray-100 focus-within:bg-gray-100">
+            <td class="border-t">
+              <input type="checkbox" :id="'contact-' + contact.id" v-model="contact.selected" class="ml-4" />
+            </td>
+            <td class="border-t">
+              <Link class="flex items-center px-6 py-4 focus:text-indigo-500" :href="`/contacts/${contact.id}/edit`">
+              {{ contact.name }}
+              <icon v-if="contact.deleted_at" name="trash" class="shrink-0 ml-2 w-3 h-3 fill-gray-400" />
+              </Link>
+            </td>
+            <td class="border-t">
+              <Link class="flex items-center px-6 py-4" :href="`/contacts/${contact.id}/edit`" tabindex="-1">
+              <div v-if="contact.organization">
+                {{ contact.organization.name }}
+              </div>
+              </Link>
+            </td>
+            <td class="border-t">
+              <Link class="flex items-center px-6 py-4" :href="`/contacts/${contact.id}/edit`" tabindex="-1">
+              {{ contact.city }}
+              </Link>
+            </td>
+            <td class="border-t">
+              <Link class="flex items-center px-6 py-4" :href="`/contacts/${contact.id}/edit`" tabindex="-1">
+              {{ contact.phone }}
+              </Link>
+            </td>
+            <td v-for="column in additionalColumns" :key="column.id" class="border-t">
+              <Link class="flex items-center px-6 py-4" :href="`/contacts/${contact.id}/edit`" tabindex="-1">
+              {{ getValue(column.name, contact) }}
+              </Link>
+            </td>
+            <td class="w-px border-t">
+              <Link class="flex items-center px-4" :href="`/contacts/${contact.id}/edit`" tabindex="-1">
+              <icon name="cheveron-right" class="block w-6 h-6 fill-gray-400" />
+              </Link>
+            </td>
+          </tr>
+          <tr v-if="selectedContacts.length === 0">
+            <td class="px-6 py-4 border-t" colspan="6">No contacts found.</td>
+          </tr>
+        </tbody>
       </table>
+
     </div>
     <pagination class="mt-6" :links="contacts.links" />
   </div>
@@ -279,6 +293,10 @@ export default {
         { name: 'city', label: 'City' },
         { name: 'phone', label: 'Phone' },
       ],
+      selectedContacts: this.contacts.data.map(contact => ({
+        ...contact,
+        selected: false,
+      })),
     }
   },
   watch: {
@@ -290,6 +308,35 @@ export default {
     },
   },
   methods: {
+
+    deleteSelected() {
+      const selectedIds = this.selectedContacts
+        .filter(contact => contact.selected)
+        .map(contact => contact.id);
+
+      if (selectedIds.length > 0) {
+        if (confirm('Are you sure you want to delete these contacts?')) {
+          this.$inertia.delete(`/contacts/delete/${selectedIds}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+              window.location.reload();
+            },
+          });
+
+
+        }
+      } else {
+        alert('No contacts selected.');
+      }
+    },
+
+    toggleSelectAll(event) {
+      const isChecked = event.target.checked;
+      this.selectedContacts.forEach(contact => {
+        contact.selected = isChecked;
+      });
+    },
+
     editColumn() {
       this.showModal = false,
         this.editColumnModal = true

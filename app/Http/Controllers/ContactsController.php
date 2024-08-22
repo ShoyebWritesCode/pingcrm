@@ -216,4 +216,14 @@ class ContactsController extends Controller
             return Redirect::back()->with('success', 'Column deleted.');
         }
     }
+
+    public function deleteSelected($ids): RedirectResponse
+    {
+        if (is_string($ids)) {
+            $ids = explode(',', $ids);
+        }
+
+        Contact::whereIn('id', $ids)->delete();
+        return Redirect::back()->with('success', 'Records Deleted');
+    }
 }

@@ -139,6 +139,10 @@ Route::delete('contacts/{contact}', [ContactsController::class, 'destroy'])
     ->name('contacts.destroy')
     ->middleware('auth');
 
+Route::delete('/contacts/delete/{ids}', [ContactsController::class, 'deleteSelected'])
+    ->name('contacts.deleteSelected')
+    ->middleware('auth');
+
 Route::put('contacts/{contact}/restore', [ContactsController::class, 'restore'])
     ->name('contacts.restore')
     ->middleware('auth');
