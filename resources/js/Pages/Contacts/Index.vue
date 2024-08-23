@@ -12,6 +12,9 @@
           <option value="only">Only Trashed</option>
         </select>
       </search-filter>
+      <button @click="toggleSelectAll" class="btn-yellow mx-4 px-3 py-2 mr-auto" title="Select All">
+        {{ allSelected ? 'Unselect All' : 'Select All' }}
+      </button>
       <p v-if="deleteButtonVisibility" class="text-xs text-gray-400">{{ countSelected }} of {{ totalContacts }} contacts
         selected</p>
       <div>
@@ -228,7 +231,7 @@
         <thead>
           <tr class="text-left font-bold">
             <th class="pb-4 pt-6 px-4">
-              <input type="checkbox" id="selectAll" @change="toggleSelectAll" />
+              <input type="checkbox" id="selectAll" @change="toggleSelectAllPage" />
             </th>
             <th class="pb-4 pt-6 px-6">Name</th>
             <th class="pb-4 pt-6 px-6">Organization</th>
@@ -327,6 +330,7 @@ export default {
       PreviewModal: false,
       editColumnModal: false,
       showConfirmation: false,
+      allSelected: false,
       // deleteButtonVisibility: false,
       csvData: [],
       csvColumns: [],
@@ -346,10 +350,10 @@ export default {
   },
   computed: {
     deleteButtonVisibility() {
-      return this.selectedContacts.some(contact => contact.selected);
+      return this.allSelected || this.selectedContacts.some(contact => contact.selected);
     },
     countSelected() {
-      return this.selectedContacts.filter(contact => contact.selected).length;
+      return this.allSelected ? this.totalContacts : this.selectedContacts.filter(contact => contact.selected).length;
     },
   },
   watch: {
@@ -364,25 +368,37 @@ export default {
 
     deleteSelected() {
       this.showConfirmation = false;
-      const selectedIds = this.selectedContacts
-        .filter(contact => contact.selected)
-        .map(contact => contact.id);
 
-      if (selectedIds.length > 0) {
-        this.$inertia.delete(`/contacts/delete/${selectedIds}`, {
+      if (this.allSelected) {
+        this.$inertia.delete('/contacts/delete/all', {
           preserveScroll: true,
           onSuccess: () => {
             window.location.reload();
-
           },
         });
-
-      } else {
-        alert('No contacts selected.');
       }
+      else {
+        const selectedIds = this.selectedContacts
+          .filter(contact => contact.selected)
+          .map(contact => contact.id);
+
+        if (selectedIds.length > 0) {
+          this.$inertia.delete(`/contacts/delete/${selectedIds}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+              window.location.reload();
+
+            },
+          });
+
+        } else {
+          alert('No contacts selected.');
+        }
+      }
+
     },
 
-    toggleSelectAll(event) {
+    toggleSelectAllPage(event) {
       const isChecked = event.target.checked;
       this.selectedContacts.forEach(contact => {
         contact.selected = isChecked;
@@ -517,6 +533,22 @@ export default {
     },
     hideConfirmation() {
       this.showConfirmation = false;
+    },
+
+    toggleSelectAll() {
+      if (this.allSelected) {
+        this.selectedContacts.forEach(contact => {
+          contact.selected = false;
+        });
+        this.allSelected = false;
+        this.deleteButtonVisibility = false;
+      } else {
+        this.selectedContacts.forEach(contact => {
+          contact.selected = true;
+        });
+        this.allSelected = true;
+        this.deleteButtonVisibility = true;
+      }
     },
 
   },
