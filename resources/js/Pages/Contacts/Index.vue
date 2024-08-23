@@ -4,7 +4,7 @@
     <Head title="Contacts" />
     <h1 class="mb-8 text-3xl font-bold">Contacts</h1>
     <div class="flex items-center justify-between mb-6">
-      <search-filter v-model="form.search" class="mr-4 w-full max-w-md" @reset="reset">
+      <search-filter v-model="form.search" class="mr-4 w-2/5 max-w-md" @reset="reset">
         <label class="block text-gray-700">Trashed:</label>
         <select v-model="form.trashed" class="form-select mt-1 w-full">
           <option :value="null" />
@@ -12,9 +12,12 @@
           <option value="only">Only Trashed</option>
         </select>
       </search-filter>
+      <p v-if="deleteButtonVisibility" class="text-xs text-gray-400">{{ countSelected }} of {{ totalContacts }} contacts
+        selected</p>
       <div>
-        <button v-if="deleteButtonVisibility" @click="showConfirmation = true" class="btn-red mx-4 px-3 py-2">
-          Delete Selected
+        <button v-if="deleteButtonVisibility" @click="showConfirmation = true" class="btn-red mx-4 px-3 py-2"
+          title="Delete Selected">
+          <font-awesome-icon icon="trash" />
         </button>
 
         <div v-if="showConfirmation" tabindex="-1"
@@ -177,7 +180,7 @@
                     <th v-for="csvColumn in csvColumns" :key="csvColumn" class="border-b font-bold text-left p-2">
                       <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">{{
                         matchingColumn(csvColumn) ? matchingColumn(csvColumn).name : selectedDbColumns[csvColumn]
-                      }}</span>
+                        }}</span>
                     </th>
                   </tr>
                 </thead>
@@ -186,7 +189,7 @@
                     <td v-for="csvColumn in csvColumns" :key="csvColumn" class="border-b p-2">
                       <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">{{
                         getValueForColumn(row, csvColumn) !== 'N/A' ? getValueForColumn(row, csvColumn) : ''
-                      }}</span>
+                        }}</span>
                     </td>
                   </tr>
                 </tbody>
@@ -295,6 +298,7 @@ import Pagination from '@/Shared/Pagination.vue'
 import SearchFilter from '@/Shared/SearchFilter.vue'
 import Papa from 'papaparse'
 import { get } from 'lodash'
+import { icon } from '@fortawesome/fontawesome-svg-core'
 
 export default {
   components: {
@@ -310,6 +314,7 @@ export default {
     contacts: Object,
     organizations: Object,
     additionalColumns: Object,
+    totalContacts: Number,
   },
   data() {
     return {
@@ -342,6 +347,9 @@ export default {
   computed: {
     deleteButtonVisibility() {
       return this.selectedContacts.some(contact => contact.selected);
+    },
+    countSelected() {
+      return this.selectedContacts.filter(contact => contact.selected).length;
     },
   },
   watch: {
