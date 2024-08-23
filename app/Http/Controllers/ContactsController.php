@@ -213,9 +213,8 @@ class ContactsController extends Controller
         $column = ContactCustomColumns::find($columnId);
         if ($column && Auth::user()->account->contactCustomColumns->contains($column)) {
             $column->delete();
-
-            return Redirect::back()->with('success', 'Column deleted.');
         }
+        return Redirect::back()->with('success', 'Column deleted.');
     }
 
     public function deleteSelected($ids): RedirectResponse
@@ -226,5 +225,11 @@ class ContactsController extends Controller
 
         Contact::whereIn('id', $ids)->delete();
         return Redirect::back()->with('success', 'Records Deleted');
+    }
+
+    public function deleteAll(): RedirectResponse
+    {
+        Contact::where('account_id', Auth::user()->account_id)->delete();
+        return Redirect::back()->with('success', 'All Records Deleted');
     }
 }

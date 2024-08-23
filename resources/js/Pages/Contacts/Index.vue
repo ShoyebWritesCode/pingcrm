@@ -183,7 +183,7 @@
                     <th v-for="csvColumn in csvColumns" :key="csvColumn" class="border-b font-bold text-left p-2">
                       <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">{{
                         matchingColumn(csvColumn) ? matchingColumn(csvColumn).name : selectedDbColumns[csvColumn]
-                        }}</span>
+                      }}</span>
                     </th>
                   </tr>
                 </thead>
@@ -192,7 +192,7 @@
                     <td v-for="csvColumn in csvColumns" :key="csvColumn" class="border-b p-2">
                       <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">{{
                         getValueForColumn(row, csvColumn) !== 'N/A' ? getValueForColumn(row, csvColumn) : ''
-                        }}</span>
+                      }}</span>
                     </td>
                   </tr>
                 </tbody>
@@ -370,32 +370,28 @@ export default {
       this.showConfirmation = false;
 
       if (this.allSelected) {
-        this.$inertia.delete('/contacts/delete/all', {
+        this.$inertia.get('contacts/delall', {
           preserveScroll: true,
           onSuccess: () => {
             window.location.reload();
           },
         });
-      }
-      else {
+      } else {
         const selectedIds = this.selectedContacts
           .filter(contact => contact.selected)
           .map(contact => contact.id);
 
         if (selectedIds.length > 0) {
-          this.$inertia.delete(`/contacts/delete/${selectedIds}`, {
+          this.$inertia.delete(`contacts/delete/${selectedIds.join(',')}`, {
             preserveScroll: true,
             onSuccess: () => {
               window.location.reload();
-
             },
           });
-
         } else {
           alert('No contacts selected.');
         }
       }
-
     },
 
     toggleSelectAllPage(event) {
