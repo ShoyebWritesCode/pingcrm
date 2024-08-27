@@ -60,12 +60,73 @@
           </div>
         </div>
 
-        <button @click="showModal = true" class="btn-indigo mx-4 px-3 py-2" title="Add New Columns">
+        <button @click="showModal = true" class="btn-indigo mx-4 px-3 py-2" title="Visible Columns">
           <font-awesome-icon icon="table-cells" />
         </button>
         <div v-if="showModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
-          <div class="bg-white rounded-lg shadow-lg p-4 w-72">
+          <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-bold">Select Columns</h2>
+              <button @click="handleColumnManager" class="btn-yellow p-2 text-xs">
+                Column Manager
+              </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div v-for="column in columns" :key="column.name" class="flex items-center">
+                <input type="checkbox" v-model="column.visible" class="mr-2" :disabled="column.disabled" checked />
+                <label>{{ column.label }}</label>
+              </div>
+            </div>
+
+            <div class="flex justify-end mt-6">
+              <button @click="applyChangesDummy" class="btn-green px-4 py-2">Apply</button>
+              <button @click="showModal = false" class="ml-4 btn-red px-4 py-2">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- <button @click="showModal = true" class="btn-indigo mx-4 px-3 py-2" title="Add New Columns">
+          <font-awesome-icon icon="table-cells" />
+        </button> -->
+        <div v-if="showModalNewColumn"
+          class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
+          <div class="bg-white rounded-lg shadow-lg p-4 w-96">
             <h2 class="text-xl font-bold mb-4">Add New Columns</h2>
+            <div class="flex flex-col">
+              <div class="flex items-center justify-between">
+                <label for="name" class="block text-sm font-medium text-gray-700">Column Name</label>
+                <input type="text" id="name"
+                  class="mt-1 block w-1/2 py-1  px-2 text-base border-2 border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" />
+              </div>
+              <div class="flex items-center justify-between mt-4">
+                <label for="type" class="block text-sm font-medium text-gray-700">Data Type</label>
+                <select id="type"
+                  class="mt-1 block w-1/2 py-1 border-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                  <option>string</option>
+                  <option>number</option>
+                  <option>date</option>
+                  <option>boolean</option>
+                </select>
+              </div>
+            </div>
+            <div class="flex justify-end mt-6">
+              <button @click="applyChanges" class="btn-green px-4 py-2">Apply</button>
+              <button @click="showModalNewColumn = false" class="ml-4 btn-red px-4 py-2">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- <div v-if="showModalColumn"
+          class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
+          <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-bold">Column Manager</h2>
+              <button @click="handleColumnManager" class="btn-yellow p-2 text-xs">
+                Add New
+              </button>
+            </div>
             <div class="flex flex-col">
               <div class="flex items-center justify-between">
                 <label for="name" class="block text-sm font-medium text-gray-700">Column Name</label>
@@ -89,7 +150,51 @@
             <div class="flex justify-end mt-6">
               <button @click="editColumn" class="btn-yellow px-4 py-2 mr-8">Edit </button>
               <button @click="applyChanges" class="btn-green px-4 py-2">Apply</button>
-              <button @click="showModal = false" class="ml-4 btn-red px-4 py-2">Cancel</button>
+              <button @click="showModalColumn = false" class="ml-4 btn-red px-4 py-2">Cancel</button>
+            </div>
+          </div>
+        </div> -->
+
+
+        <div v-if="showModalColumn"
+          class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
+          <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-bold">Column Manager</h2>
+              <button @click="showModalNewColumnManager" class="btn-yellow p-2 text-xs">
+                Add New
+              </button>
+            </div>
+            <div v-for="column in additionalColumns" :key="column.id"
+              class="mb-0 flex items-center justify-between border-2">
+              <span class="px-4 font-bold">{{ column.name }}</span>
+              <div class="flex space-x-2">
+                <button @click="renameColumn(column.id)" class="bg-transparent px-2 py-2">
+                  <font-awesome-icon icon="edit" class="text-yellow-500" />
+                </button>
+                <button @click="deleteColumn(column.id)" class="btn-transparent px-2 py-2">
+                  <font-awesome-icon icon="trash" class="text-red-500" />
+                </button>
+              </div>
+            </div>
+            <div v-for="column in columns" :key="column.name" class="flex items-center justify-between border-2">
+              <label class="px-4 text-gray-400 font-bold">{{ column.label }}</label>
+              <div class="flex space-x-2">
+                <button @click="renameColumn(column.id)" class="bg-transparent px-2 py-2" disabled>
+                  <font-awesome-icon icon="edit" class="text-yellow-500" />
+                </button>
+                <button @click="deleteColumn(column.id)" class="btn-transparent px-2 py-2" disabled>
+                  <font-awesome-icon icon="trash" class="text-red-500" />
+                </button>
+              </div>
+            </div>
+
+
+
+            <div class="flex justify-end mt-6">
+              <!-- <button @click="editColumn" class="btn-yellow px-4 py-2 mr-8">Edit </button>
+              <button @click="applyChanges" class="btn-green px-4 py-2">Apply</button> -->
+              <button @click="showModalColumn = false" class="ml-4 btn-red px-4 py-2">Cancel</button>
             </div>
           </div>
         </div>
@@ -183,7 +288,7 @@
                     <th v-for="csvColumn in csvColumns" :key="csvColumn" class="border-b font-bold text-left p-2">
                       <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">{{
                         matchingColumn(csvColumn) ? matchingColumn(csvColumn).name : selectedDbColumns[csvColumn]
-                      }}</span>
+                        }}</span>
                     </th>
                   </tr>
                 </thead>
@@ -192,7 +297,7 @@
                     <td v-for="csvColumn in csvColumns" :key="csvColumn" class="border-b p-2">
                       <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">{{
                         getValueForColumn(row, csvColumn) !== 'N/A' ? getValueForColumn(row, csvColumn) : ''
-                      }}</span>
+                        }}</span>
                     </td>
                   </tr>
                 </tbody>
@@ -331,6 +436,8 @@ export default {
       editColumnModal: false,
       showConfirmation: false,
       allSelected: false,
+      showModalColumn: false,
+      showModalNewColumn: false,
       // deleteButtonVisibility: false,
       csvData: [],
       csvColumns: [],
@@ -545,6 +652,27 @@ export default {
         this.allSelected = true;
         this.deleteButtonVisibility = true;
       }
+    },
+
+    // applyChanges() {
+    //   this.showModal = false;
+
+    //   const selectedColumns = this.columns
+    //     .filter(column => column.visible)
+    //     .map(column => column.name);
+
+
+    //   // this.$inertia.post('/contacts/column', {
+    //   //   columns: selectedColumns,
+    //   // });
+    // },
+    handleColumnManager() {
+      this.showModalColumn = true;
+      this.showModal = false;
+    },
+    showModalNewColumnManager() {
+      this.showModalColumn = false;
+      this.showModalNewColumn = true;
     },
 
   },
