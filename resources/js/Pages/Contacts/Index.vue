@@ -283,7 +283,7 @@
                     <th v-for="csvColumn in csvColumns" :key="csvColumn" class="border-b font-bold text-left p-2">
                       <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">{{
                         matchingColumn(csvColumn) ? matchingColumn(csvColumn).name : selectedDbColumns[csvColumn]
-                        }}</span>
+                      }}</span>
                     </th>
                   </tr>
                 </thead>
@@ -292,7 +292,7 @@
                     <td v-for="csvColumn in csvColumns" :key="csvColumn" class="border-b p-2">
                       <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">{{
                         getValueForColumn(row, csvColumn) !== 'N/A' ? getValueForColumn(row, csvColumn) : ''
-                        }}</span>
+                      }}</span>
                     </td>
                   </tr>
                 </tbody>
@@ -334,12 +334,15 @@
               <input type="checkbox" id="selectAll" @change="toggleSelectAllPage" />
             </th> -->
           <draggable v-model="columns" tag="tr" class="cursor-pointer" :item-key="column => column.name">
-            <template #item="{ element: column }">
-              <th :key="column.name" class="pb-4 pt-6 px-4 text-left" v-if="column.name !== 'selectAll'">
-                {{ column.label }}
-              </th>
-              <th v-else class="pb-4 pt-6 px-4" v-bind:draggable="false">
+            <template #header>
+              <th class="pb-4 pt-6 px-8 text-left ">
                 <input type="checkbox" id="selectAll" @change="toggleSelectAllPage" />
+              </th>
+            </template>
+            <template #item="{ element: column }">
+              <th class="pb-4 pt-6 pl-3 sticky top-0 z-10 text-left">
+                <font-awesome-icon icon="grip-vertical" class="text-xs text-gray-600 pb-[1px]" />
+                {{ column.label }}
               </th>
             </template>
           </draggable>
@@ -354,7 +357,7 @@
             <td class="border-t px-4 py-2">
               <input type="checkbox" :id="'contact-' + contact.id" v-model="contact.selected" class="ml-4" />
             </td>
-            <td v-for="column in columns.slice(1)" :key="column.name" class="border-t">
+            <td v-for="column in columns" :key="column.name" class="border-t">
               <Link class="flex items-center pl-3 py-4 focus:text-indigo-500" :href="`/contacts/${contact.id}/edit`">
               <span v-if="column.name == 'organization'">{{ contact.organization.name }}</span>
               <span v-else>{{ contact[column.name] }}</span>
@@ -441,7 +444,6 @@ export default {
       selectedDbColumns: {},
       selectedOrganization: '',
       columns: [
-        { name: 'selectAll', label: '' },
         { name: 'name', label: 'Name', additional: false },
         { name: 'organization', label: 'Organization', additional: false },
         { name: 'city', label: 'City', additional: false },
