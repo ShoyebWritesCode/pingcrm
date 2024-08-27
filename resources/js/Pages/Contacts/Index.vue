@@ -80,7 +80,7 @@
             </div>
 
             <div class="flex justify-end mt-6">
-              <button @click="applyChangesDummy" class="btn-green px-4 py-2">Apply</button>
+              <button @click="applyChangesDummy" class="btn-green px-4 py-2">Submit</button>
               <button @click="showModal = false" class="ml-4 btn-red px-4 py-2">Cancel</button>
             </div>
           </div>
@@ -112,7 +112,7 @@
               </div>
             </div>
             <div class="flex justify-end mt-6">
-              <button @click="applyChanges" class="btn-green px-4 py-2">Apply</button>
+              <button @click="applyChanges" class="btn-green px-4 py-2">Submit</button>
               <button @click="showModalNewColumn = false" class="ml-4 btn-red px-4 py-2">Cancel</button>
             </div>
           </div>
@@ -166,25 +166,22 @@
               </button>
             </div>
             <div v-for="column in additionalColumns" :key="column.id"
-              class="mb-0 flex items-center justify-between border-2">
-              <span class="px-4 font-bold">{{ column.name }}</span>
+              class="mb-0 flex items-center justify-between border-[1px]">
+              <span class="px-4 ">{{ column.name }}</span>
               <div class="flex space-x-2">
-                <button @click="renameColumn(column.id)" class="bg-transparent px-2 py-2">
+                <button @click="renameColumn(column.id)" class="bg-transparent px-2 py-3">
                   <font-awesome-icon icon="edit" class="text-yellow-500" />
                 </button>
-                <button @click="deleteColumn(column.id)" class="btn-transparent px-2 py-2">
+                <button @click="deleteColumn(column.id)" class="btn-transparent px-2 py-3">
                   <font-awesome-icon icon="trash" class="text-red-500" />
                 </button>
               </div>
             </div>
-            <div v-for="column in columns" :key="column.name" class="flex items-center justify-between border-2">
-              <label class="px-4 text-gray-400 font-bold">{{ column.label }}</label>
-              <div class="flex space-x-2">
-                <button @click="renameColumn(column.id)" class="bg-transparent px-2 py-2" disabled>
-                  <font-awesome-icon icon="edit" class="text-yellow-500" />
-                </button>
-                <button @click="deleteColumn(column.id)" class="btn-transparent px-2 py-2" disabled>
-                  <font-awesome-icon icon="trash" class="text-red-500" />
+            <div v-for="column in columns" :key="column.name" class="flex items-center justify-between border-[1px]">
+              <label class="px-4 ">{{ column.label }}</label>
+              <div class="flex space-x-2 px-2 py-2">
+                <button class="bg-transparent text-gray-400 border-1 p-1 rounded-md text-xs">
+                  <p>Default</p>
                 </button>
               </div>
             </div>
