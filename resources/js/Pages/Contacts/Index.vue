@@ -80,7 +80,7 @@
             </div>
 
             <div class="flex justify-end mt-6">
-              <button @click="applyChangesDummy" class="btn-green px-4 py-2">Submit</button>
+              <button @click="applyChangesDummy" class="btn-green px-4 py-2">Apply</button>
               <button @click="showModal = false" class="ml-4 btn-red px-4 py-2">Cancel</button>
             </div>
           </div>
@@ -112,7 +112,7 @@
               </div>
             </div>
             <div class="flex justify-end mt-6">
-              <button @click="applyChanges" class="btn-green px-4 py-2">Submit</button>
+              <button @click="applyChanges" class="btn-green px-4 py-2">Apply</button>
               <button @click="showModalNewColumn = false" class="ml-4 btn-red px-4 py-2">Cancel</button>
             </div>
           </div>
@@ -167,22 +167,20 @@
             </div>
             <div v-for="column in additionalColumns" :key="column.id"
               class="mb-0 flex items-center justify-between border-[1px]">
-              <span class="px-4 ">{{ column.name }}</span>
-              <div class="flex space-x-2">
+              <span class="px-4 py-4">{{ column.name }}</span>
+              <div class="flex space-x-2 mx-4">
                 <button @click="renameColumn(column.id)" class="bg-transparent px-2 py-3">
                   <font-awesome-icon icon="edit" class="text-yellow-500" />
                 </button>
-                <button @click="deleteColumn(column.id)" class="btn-transparent px-2 py-3">
+                <button @click="deleteColumn(column.id)" class="btn-transparent px-2 py-2">
                   <font-awesome-icon icon="trash" class="text-red-500" />
                 </button>
               </div>
             </div>
             <div v-for="column in columns" :key="column.name" class="flex items-center justify-between border-[1px]">
-              <label class="px-4 ">{{ column.label }}</label>
+              <label class="px-4">{{ column.label }}</label>
               <div class="flex space-x-2 px-2 py-2">
-                <button class="bg-transparent text-gray-400 border-1 p-1 rounded-md text-xs">
-                  <p>Default</p>
-                </button>
+                <button class="bg-transparent text-gray-600 border-2 py-1 px-3 rounded-md text-xs mx-4">Default</button>
               </div>
             </div>
 
