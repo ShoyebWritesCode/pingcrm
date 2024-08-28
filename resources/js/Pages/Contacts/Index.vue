@@ -4,9 +4,10 @@
     <Head title="Contacts" />
     <div class="flex items-center justify-between mb-8">
       <h1 class="text-3xl font-bold">Contacts</h1>
-      <nav class="flex space-x-8 bg-white py-3 px-6 rounded-full">
+      <nav class="flex space-x-4 bg-white py-2 px-6 rounded-full">
         <a v-for="link in links" :key="link.name" :href="link.url" :id="link.id"
-          class="text-indigo-600 target:bg-indigo-600 target:text-white px-3 py-2 rounded-full">
+          class="text-indigo-600 target:bg-indigo-600 target:text-white px-3 py-2 rounded-full"
+          @click="handleLinkClick">
           {{ link.name }}
         </a>
 
@@ -395,6 +396,14 @@ export default {
     additionalColumns: Object,
     totalContacts: Number,
   },
+  mounted() {
+    if (window.location.hash === '#today') {
+      const today = document.getElementById('today');
+      today.classList.add('bg-indigo-600');
+      today.classList.remove('text-indigo-600');
+      today.classList.add('text-white');
+    }
+  },
   data() {
     return {
       form: {
@@ -434,8 +443,13 @@ export default {
         { name: 'Yesterday', url: '/contacts?filter=yesterday#yesterday', id: 'yesterday' },
         { name: 'Last 7 days', url: '/contacts?filter=last7days#last7days', id: 'last7days' },
         { name: 'Last 30 days', url: '/contacts?filter=last30days#last30days', id: 'last30days' },
-        { name: 'Last 90 days', url: '/contacts?filter=last90days#last90days', id: 'last90days' }
+        { name: 'Last 90 days', url: '/contacts?filter=last90days#last90days', id: 'last90days' },
+        { name: 'All Time', url: '/contacts?filter=alltime#alltime', id: 'alltime' },
+        { name: 'Custom', url: '/contacts?filter=custom#custom', id: 'custom' }
+
+
       ],
+      activeLink: 'today',
     }
   },
   computed: {
@@ -455,6 +469,17 @@ export default {
     },
   },
   methods: {
+
+    handleLinkClick() {
+      const today = document.getElementById('today');
+      today.classList.remove('bg-indigo-600');
+      today.classList.remove('text-white');
+    },
+    setActiveLink(linkId) {
+      this.activeLink = linkId;
+      // Optionally, you can navigate to the URL here if needed
+      window.location.href = this.links.find(link => link.id === linkId).url;
+    },
     deleteSelected() {
       this.showConfirmation = false;
 
