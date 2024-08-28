@@ -18,12 +18,25 @@ class ContactsController extends Controller
 {
     public function index(): Response
     {
+
+        $filter = Request::query('filter', '');
+        $contactsQuery = Auth::user()->account->contacts()->with('organization');
+        if ($filter === 'today') {
+            $contactsQuery->whereDate('created_at', today());
+        } elseif ($filter === 'yesterday') {
+            $contactsQuery->whereDate('created_at', today()->subDay());
+        } elseif ($filter === 'last7days') {
+            $contactsQuery->whereDate('created_at', '>=', today()->subDays(7));
+        } elseif ($filter === 'last30days') {
+            $contactsQuery->whereDate('created_at', '>=', today()->subDays(30));
+        } elseif ($filter === 'last90days') {
+            $contactsQuery->whereDate('created_at', '>=', today()->subDays(90));
+        }
         return Inertia::render('Contacts/Index', [
             'filters' => Request::all('search', 'trashed'),
             'organizations' => Organization::all(),
             'additionalColumns' => Auth::user()->account->contactCustomColumns()->get(),
-            'contacts' => Auth::user()->account->contacts()
-                ->with('organization')
+            'contacts' => $contactsQuery
                 ->orderByName()
                 ->filter(Request::only('search', 'trashed'))
                 ->paginate(10)
