@@ -5,11 +5,10 @@
     <div class="flex items-center justify-between mb-8">
       <h1 class="text-3xl font-bold">Contacts</h1>
       <nav class="flex space-x-8 bg-white py-3 px-6 rounded-full">
-        <a href="contacts?filter=today" class="text-indigo-600 hover:text-gray-900">Today</a>
-        <a href="contacts?filter=yesterday" class="text-indigo-600 hover:text-gray-900">Yesterday</a>
-        <a href="contacts?filter=last7days" class="text-indigo-600 hover:text-gray-900">Last 7 days</a>
-        <a href="contacts?filter=last30days" class="text-indigo-600 hover:text-gray-900">Last 30 days</a>
-        <a href="contacts?filter=last90days" class="text-indigo-600 hover:text-gray-900">Last 90 days</a>
+        <a v-for="link in links" :key="link.name" :href="link.url" :id="link.id"
+          class="text-indigo-600 target:bg-indigo-600 target:text-white px-3 py-2 rounded-full">
+          {{ link.name }}
+        </a>
 
       </nav>
     </div>
@@ -430,6 +429,13 @@ export default {
         ...contact,
         selected: false,
       })),
+      links: [
+        { name: 'Today', url: '/contacts?filter=today#today', id: 'today' },
+        { name: 'Yesterday', url: '/contacts?filter=yesterday#yesterday', id: 'yesterday' },
+        { name: 'Last 7 days', url: '/contacts?filter=last7days#last7days', id: 'last7days' },
+        { name: 'Last 30 days', url: '/contacts?filter=last30days#last30days', id: 'last30days' },
+        { name: 'Last 90 days', url: '/contacts?filter=last90days#last90days', id: 'last90days' }
+      ],
     }
   },
   computed: {
@@ -449,7 +455,6 @@ export default {
     },
   },
   methods: {
-
     deleteSelected() {
       this.showConfirmation = false;
 
