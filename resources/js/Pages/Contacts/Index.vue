@@ -4,14 +4,17 @@
     <Head title="Contacts" />
     <div class="flex items-center justify-between mb-8">
       <h1 class="text-3xl font-bold">Contacts</h1>
-      <nav class="flex space-x-4 bg-white py-2 px-6 rounded-full">
-        <a v-for="link in links" :key="link.name" :href="link.url" :id="link.id"
-          class="text-indigo-600 target:bg-indigo-600 target:text-white px-3 py-2 rounded-full"
-          @click="handleLinkClick">
-          {{ link.name }}
-        </a>
-
-      </nav>
+      <div class="flex flex-col items-end w-full">
+        <nav class="flex space-x-4 bg-white py-2 px-6 rounded-full mb-2">
+          <a v-for="link in links" :key="link.name" :href="link.url" :id="link.id"
+            class="text-indigo-600 target:bg-indigo-600 target:text-white px-3 py-2 rounded-full"
+            @click="handleLinkClick(link.id)">
+            {{ link.name }}
+          </a>
+        </nav>
+        <VueDatePicker v-if="showDatePicker" v-model="date" range class="mt-2 w-1/3 mr-4" :enable-time-picker="false"
+          format="dd-MM-yyyy" />
+      </div>
     </div>
     <div class="flex items-center justify-between mb-6">
       <search-filter v-model="form.search" class="mr-4 w-2/5 max-w-md" @reset="reset">
@@ -376,8 +379,8 @@ import Pagination from '@/Shared/Pagination.vue'
 import SearchFilter from '@/Shared/SearchFilter.vue'
 import Papa from 'papaparse'
 import draggable from 'vuedraggable'
-import { get } from 'lodash'
-import { icon } from '@fortawesome/fontawesome-svg-core'
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
 
 export default {
   components: {
@@ -387,6 +390,7 @@ export default {
     Pagination,
     SearchFilter,
     draggable,
+    VueDatePicker,
   },
   layout: Layout,
   props: {
@@ -403,8 +407,20 @@ export default {
       today.classList.remove('text-indigo-600');
       today.classList.add('text-white');
     }
+
+    if (window.location.href.includes('start_date')) {
+      this.showDatePicker = true;
+    }
+
   },
   data() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const startDateParam = urlParams.get('start_date');
+    const endDateParam = urlParams.get('end_date');
+
+    const startDate = startDateParam ? new Date(startDateParam) : new Date();
+    const endDate = endDateParam ? new Date(endDateParam) : new Date(new Date().setDate(startDate.getDate() + 7));
+
     return {
       form: {
         search: this.filters.search,
@@ -449,7 +465,9 @@ export default {
 
 
       ],
-      activeLink: 'today',
+      date: [startDate, endDate],
+      endDate: new Date(),
+      showDatePicker: false,
     }
   },
   computed: {
@@ -467,13 +485,30 @@ export default {
         this.$inertia.get('/contacts', pickBy(this.form), { preserveState: true })
       }, 150),
     },
+    date(newDate) {
+      if (newDate && newDate.length === 2) {
+
+        var startDate = newDate[0].toLocaleDateString();
+        var endDate = newDate[1].toLocaleDateString();
+        //now make a inertia request to fetch data based on the selected date range
+        this.$inertia.get(`/contacts?start_date=${startDate}&end_date=${endDate}`, {
+          preserveScroll: true,
+        });
+
+      }
+    },
   },
   methods: {
 
-    handleLinkClick() {
+    handleLinkClick(linkId) {
       const today = document.getElementById('today');
       today.classList.remove('bg-indigo-600');
       today.classList.remove('text-white');
+      if (linkId === 'custom') {
+        this.showDatePicker = !this.showDatePicker; // Toggle the date picker visibility
+      } else {
+        this.showDatePicker = false; // Hide it for other links
+      }
     },
     setActiveLink(linkId) {
       this.activeLink = linkId;

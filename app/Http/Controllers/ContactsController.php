@@ -20,18 +20,27 @@ class ContactsController extends Controller
     {
 
         $filter = Request::query('filter', '');
+        $startDate = Request::query('start_date');
+        $endDate = Request::query('end_date');
         $contactsQuery = Auth::user()->account->contacts()->with('organization');
-        if ($filter === 'today') {
-            $contactsQuery->whereDate('created_at', today());
-        } elseif ($filter === 'yesterday') {
-            $contactsQuery->whereDate('created_at', today()->subDay());
-        } elseif ($filter === 'last7days') {
-            $contactsQuery->whereDate('created_at', '>=', today()->subDays(7));
-        } elseif ($filter === 'last30days') {
-            $contactsQuery->whereDate('created_at', '>=', today()->subDays(30));
-        } elseif ($filter === 'last90days') {
-            $contactsQuery->whereDate('created_at', '>=', today()->subDays(90));
+        if ($startDate && $endDate) {
+            $contactsQuery->whereDate('created_at', '>=', $startDate)
+                ->whereDate('created_at', '<=', $endDate);
+        } else {
+            // Apply default filter
+            if ($filter === 'today') {
+                $contactsQuery->whereDate('created_at', today());
+            } elseif ($filter === 'yesterday') {
+                $contactsQuery->whereDate('created_at', today()->subDay());
+            } elseif ($filter === 'last7days') {
+                $contactsQuery->whereDate('created_at', '>=', today()->subDays(7));
+            } elseif ($filter === 'last30days') {
+                $contactsQuery->whereDate('created_at', '>=', today()->subDays(30));
+            } elseif ($filter === 'last90days') {
+                $contactsQuery->whereDate('created_at', '>=', today()->subDays(90));
+            }
         }
+
         return Inertia::render('Contacts/Index', [
             'filters' => Request::all('search', 'trashed'),
             'organizations' => Organization::all(),
