@@ -38,8 +38,15 @@
           <text-input v-model="form.postal_code" :error="form.errors.postal_code" class="pb-8 pr-6 w-full lg:w-1/2"
             label="Postal code" />
           <div v-for="(column, index) in columns" :key="index" class="pb-8 pr-6 w-full lg:w-1/2">
-            <text-input v-model="columns[index].value" :label="column.name" :id="'input-' + index"
-              @input="updateCustomColumn(index, value, $event)" />
+            <div v-if="column.type === 'date'" class="mt-2">
+              <label :for="'input-' + index" class="block text-md text-gray-700">{{ column.name }}:</label>
+              <VueDatePicker v-model="columns[index].value" :id="'input-' + index"
+                @input="updateCustomColumn(index, $event)" :enable-time-picker="false" format="dd-MM-yyyy" />
+            </div>
+            <div v-else>
+              <text-input v-model="columns[index].value" :label="column.name" :id="'input-' + index"
+                @input="updateCustomColumn(index, $event)" />
+            </div>
           </div>
 
         </div>
@@ -61,6 +68,8 @@ import TextInput from '@/Shared/TextInput.vue'
 import SelectInput from '@/Shared/SelectInput.vue'
 import LoadingButton from '@/Shared/LoadingButton.vue'
 import TrashedMessage from '@/Shared/TrashedMessage.vue'
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
 
 export default {
   components: {
@@ -70,6 +79,7 @@ export default {
     SelectInput,
     TextInput,
     TrashedMessage,
+    VueDatePicker,
   },
   layout: Layout,
   props: {
@@ -112,21 +122,26 @@ export default {
         };
       });
     },
-    updateCustomColumn(index, value, event) {
-      this.customColumns[index].value = event.target.value
+
+    updateCustomColumn(index, event) {
+      // Handle update based on input type
+      const newValue = event.target.value;
+      this.columns[index].value = newValue;
     },
+
     getCustomColumns() {
-      return this.customColumns.map((column, index) => {
+      return this.columns.map(column => {
         return {
           name: column.name,
           value: column.value,
-          id: column.id,
-        }
-      })
+          id: column.id
+        };
+      });
     },
     update() {
       this.form.put(`/contacts/${this.contact.id}`)
       const input = this.getCustomColumns()
+      console.log(input)
       this.$inertia.put(`/contacts/${this.contact.id}/custom-columns`, {
         columns: input,
       })

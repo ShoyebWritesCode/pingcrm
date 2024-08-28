@@ -131,10 +131,20 @@ Route::put('contacts/{contact}/custom-columns', [ContactsController::class, 'upd
     ->name('contacts.update-custom-columns')
     ->middleware('auth');
 
+Route::delete('contacts/{columnId}/delete', [ContactsController::class, 'deleteCustomColumns'])
+    ->name('contacts.delete-custom-columns')
+    ->middleware('auth');
+
 Route::delete('contacts/{contact}', [ContactsController::class, 'destroy'])
     ->name('contacts.destroy')
     ->middleware('auth');
 
+Route::delete('contacts/delete/{ids}', [ContactsController::class, 'deleteSelected'])
+    ->name('contacts.deleteSelected')
+    ->middleware('auth');
+Route::get('contacts/delall', [ContactsController::class, 'deleteAll'])
+    ->name('contacts.deleteAll')
+    ->middleware('auth');
 Route::put('contacts/{contact}/restore', [ContactsController::class, 'restore'])
     ->name('contacts.restore')
     ->middleware('auth');

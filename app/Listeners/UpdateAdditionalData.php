@@ -18,7 +18,14 @@ class UpdateAdditionalData
         foreach ($columns as $column) {
             if (isset($column['value']) && $column['value'] !== null) {
                 $columnName = ContactCustomColumns::where('id', $column['id'])->value('name');
-                $additionalData[$columnName] = $column['value'];
+                $columnType = ContactCustomColumns::where('id', $column['id'])->value('type');
+                if ($columnType === 'date') {
+                    $dateValue = strtotime($column['value']);
+                    $formattedDate = date('d-m-Y', $dateValue);
+                    $additionalData[$columnName] = $formattedDate;
+                } else {
+                    $additionalData[$columnName] = $column['value'];
+                }
             }
         }
 

@@ -37,6 +37,7 @@ class ContactsController extends Controller
                     'organization' => $contact->organization ? $contact->organization->only('name') : null,
                     'additional_data' => $contact->additional_data,
                 ]),
+            'totalContacts' => Auth::user()->account->contacts()->count(),
         ]);
     }
 
@@ -204,5 +205,31 @@ class ContactsController extends Controller
         event(new CustomColumnsUpdated($contact, $columns));
 
         return Redirect::back()->with('success', 'Contact updated.');
+    }
+
+    public function deleteCustomColumns($columnId): RedirectResponse
+    {
+
+        $column = ContactCustomColumns::find($columnId);
+        if ($column && Auth::user()->account->contactCustomColumns->contains($column)) {
+            $column->delete();
+        }
+        return Redirect::back()->with('success', 'Column deleted.');
+    }
+
+    public function deleteSelected($ids): RedirectResponse
+    {
+        if (is_string($ids)) {
+            $ids = explode(',', $ids);
+        }
+
+        Contact::whereIn('id', $ids)->delete();
+        return Redirect::back()->with('success', 'Records Deleted');
+    }
+
+    public function deleteAll(): RedirectResponse
+    {
+        Contact::where('account_id', Auth::user()->account_id)->delete();
+        return Redirect::back()->with('success', 'All Records Deleted');
     }
 }
