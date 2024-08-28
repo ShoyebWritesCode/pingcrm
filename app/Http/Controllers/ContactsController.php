@@ -50,7 +50,7 @@ class ContactsController extends Controller
                     'organization' => $contact->organization ? $contact->organization->only('name') : null,
                     'additional_data' => $contact->additional_data,
                 ]),
-            'totalContacts' => Auth::user()->account->contacts()->count(),
+            'totalContacts' =>  $contactsQuery->count(),
         ]);
     }
 
