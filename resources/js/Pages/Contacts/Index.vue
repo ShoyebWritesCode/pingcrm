@@ -2,7 +2,16 @@
   <div>
 
     <Head title="Contacts" />
-    <h1 class="mb-8 text-3xl font-bold">Contacts</h1>
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-3xl font-bold">Contacts</h1>
+      <nav class="flex space-x-8 bg-white py-3 px-6 rounded-full">
+        <a href="#" class="text-indigo-600 hover:text-gray-900">Today</a>
+        <a href="#" class="text-indigo-600 hover:text-gray-900">Yesterday</a>
+        <a href="#" class="text-indigo-600 hover:text-gray-900">Last 7 days</a>
+        <a href="#" class="text-indigo-600 hover:text-gray-900">Last 30 days</a>
+        <a href="#" class="text-indigo-600 hover:text-gray-900">Last 90 days</a>
+      </nav>
+    </div>
     <div class="flex items-center justify-between mb-6">
       <search-filter v-model="form.search" class="mr-4 w-2/5 max-w-md" @reset="reset">
         <label class="block text-gray-700">Trashed:</label>
@@ -117,44 +126,6 @@
             </div>
           </div>
         </div>
-
-        <!-- <div v-if="showModalColumn"
-          class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
-          <div class="bg-white rounded-lg shadow-lg p-6 w-96">
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="text-xl font-bold">Column Manager</h2>
-              <button @click="handleColumnManager" class="btn-yellow p-2 text-xs">
-                Add New
-              </button>
-            </div>
-            <div class="flex flex-col">
-              <div class="flex items-center justify-between">
-                <label for="name" class="block text-sm font-medium text-gray-700">Column Name</label>
-                <input type="text" id="name"
-                  class="mt-1 block w-1/2 py-1  px-2 text-base border-2 border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" />
-              </div>
-              <div class="flex items-center justify-between mt-4">
-                <label for="type" class="block text-sm font-medium text-gray-700">Data Type</label>
-                <select id="type"
-                  class="mt-1 block w-1/2 py-1 border-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                  <option>string</option>
-                  <option>number</option>
-                  <option>date</option>
-                  <option>boolean</option>
-                </select>
-              </div>
-            </div>
-
-
-
-            <div class="flex justify-end mt-6">
-              <button @click="editColumn" class="btn-yellow px-4 py-2 mr-8">Edit </button>
-              <button @click="applyChanges" class="btn-green px-4 py-2">Apply</button>
-              <button @click="showModalColumn = false" class="ml-4 btn-red px-4 py-2">Cancel</button>
-            </div>
-          </div>
-        </div> -->
-
 
         <div v-if="showModalColumn"
           class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
