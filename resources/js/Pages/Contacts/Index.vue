@@ -258,7 +258,7 @@
                     <th v-for="csvColumn in csvColumns" :key="csvColumn" class="border-b font-bold text-left p-2">
                       <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">{{
                         matchingColumn(csvColumn) ? matchingColumn(csvColumn).name : selectedDbColumns[csvColumn]
-                      }}</span>
+                        }}</span>
                     </th>
                   </tr>
                 </thead>
@@ -267,7 +267,7 @@
                     <td v-for="csvColumn in csvColumns" :key="csvColumn" class="border-b p-2">
                       <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">{{
                         getValueForColumn(row, csvColumn) !== 'N/A' ? getValueForColumn(row, csvColumn) : ''
-                      }}</span>
+                        }}</span>
                     </td>
                   </tr>
                 </tbody>
@@ -401,11 +401,20 @@ export default {
     totalContacts: Number,
   },
   mounted() {
-    if (window.location.hash === '#today') {
-      const today = document.getElementById('today');
-      today.classList.add('bg-indigo-600');
-      today.classList.remove('text-indigo-600');
-      today.classList.add('text-white');
+    // Check if there is a hash in the URL
+    const hash = window.location.hash;
+
+    if (hash) {
+      // Remove the '#' character from the hash
+      const elementId = hash.replace('#', '');
+      const element = document.getElementById(elementId);
+
+      if (element) {
+        // Apply styles to the element with the ID from the hash
+        element.classList.add('bg-indigo-600');
+        element.classList.remove('text-indigo-600');
+        element.classList.add('text-white');
+      }
     }
 
     if (window.location.href.includes('start_date')) {
@@ -439,6 +448,7 @@ export default {
       csvColumns: [],
       selectedDbColumns: {},
       selectedOrganization: '',
+
       columns: [
         { name: 'name', label: 'Name', additional: false },
         { name: 'organization', label: 'Organization', additional: false },
@@ -501,6 +511,13 @@ export default {
   methods: {
 
     handleLinkClick(linkId) {
+      const hashValue = `#${linkId}`;
+      console.log('Setting selectedhash to:', hashValue);
+      window.sessionStorage.setItem('selectedhash', hashValue);
+
+      // Log to confirm it's set
+      const storedHash = window.sessionStorage.getItem('selectedhash');
+      console.log('Stored selectedhash:', storedHash);
       const today = document.getElementById('today');
       today.classList.remove('bg-indigo-600');
       today.classList.remove('text-white');

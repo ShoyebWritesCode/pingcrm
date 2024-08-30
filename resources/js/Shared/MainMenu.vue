@@ -15,7 +15,7 @@
       </Link>
     </div>
     <div class="mb-4">
-      <Link class="group flex items-center py-3" href="/contacts?filter=today#today">
+      <Link class="group flex items-center py-3" :href="`/contacts?filter=${param}${storedHash}`">
       <icon name="users" class="mr-2 w-4 h-4"
         :class="isUrl('contacts') ? 'fill-white' : 'fill-indigo-400 group-hover:fill-white'" />
       <div :class="isUrl('contacts') ? 'text-white' : 'text-indigo-300 group-hover:text-white'">Contacts</div>
@@ -54,6 +54,23 @@ export default {
   components: {
     Icon,
     Link,
+  },
+  data() {
+    return {
+      param: '',
+      storedHash: '',
+    };
+  },
+  mounted() {
+    let storedHash = window.sessionStorage.getItem('selectedhash');
+    console.log('Stored selectedhash on this page:', storedHash);
+    //if doesnot exist, set it to #today
+    if (!storedHash) {
+      window.sessionStorage.setItem('selectedhash', '#today');
+    }
+    this.storedHash = storedHash;
+    this.param = storedHash.replace('#', '');
+
   },
   methods: {
     isUrl(...urls) {
