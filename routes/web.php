@@ -107,9 +107,13 @@ Route::post('organizations/import-csv', [OrganizationsController::class, 'import
 
 // Contacts
 
-Route::get('contacts', [ContactsController::class, 'index'])
+Route::any('contacts/home', [ContactsController::class, 'index'])
     ->name('contacts')
     ->middleware('auth');
+
+// Route::post('contacts/filter', [ContactsController::class, 'setFilter'])
+//     ->name('contacts')
+//     ->middleware('auth');
 
 Route::get('contacts/create', [ContactsController::class, 'create'])
     ->name('contacts.create')

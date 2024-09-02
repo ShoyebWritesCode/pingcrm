@@ -2,7 +2,19 @@
   <div>
 
     <Head title="Contacts" />
-    <h1 class="mb-8 text-3xl font-bold">Contacts</h1>
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-3xl font-bold">Contacts</h1>
+      <div class="flex flex-col items-end w-full">
+        <nav class="flex space-x-4 bg-white py-2 px-6 rounded-full mb-2">
+          <a v-for="link in links" :key="link.id" @click="handleLinkClick(link.id, $event)" href="#"
+            class="text-indigo-600 px-3 py-2 rounded-full cursor-pointer">
+            {{ link.name }}
+          </a>
+        </nav>
+        <VueDatePicker v-if="showDatePicker" v-model="date" range class="mt-2 w-1/3 mr-4" :enable-time-picker="false"
+          format="dd-MM-yyyy" />
+      </div>
+    </div>
     <div class="flex items-center justify-between mb-6">
       <search-filter v-model="form.search" class="mr-4 w-2/5 max-w-md" @reset="reset">
         <label class="block text-gray-700">Trashed:</label>
@@ -117,44 +129,6 @@
             </div>
           </div>
         </div>
-
-        <!-- <div v-if="showModalColumn"
-          class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
-          <div class="bg-white rounded-lg shadow-lg p-6 w-96">
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="text-xl font-bold">Column Manager</h2>
-              <button @click="handleColumnManager" class="btn-yellow p-2 text-xs">
-                Add New
-              </button>
-            </div>
-            <div class="flex flex-col">
-              <div class="flex items-center justify-between">
-                <label for="name" class="block text-sm font-medium text-gray-700">Column Name</label>
-                <input type="text" id="name"
-                  class="mt-1 block w-1/2 py-1  px-2 text-base border-2 border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" />
-              </div>
-              <div class="flex items-center justify-between mt-4">
-                <label for="type" class="block text-sm font-medium text-gray-700">Data Type</label>
-                <select id="type"
-                  class="mt-1 block w-1/2 py-1 border-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                  <option>string</option>
-                  <option>number</option>
-                  <option>date</option>
-                  <option>boolean</option>
-                </select>
-              </div>
-            </div>
-
-
-
-            <div class="flex justify-end mt-6">
-              <button @click="editColumn" class="btn-yellow px-4 py-2 mr-8">Edit </button>
-              <button @click="applyChanges" class="btn-green px-4 py-2">Apply</button>
-              <button @click="showModalColumn = false" class="ml-4 btn-red px-4 py-2">Cancel</button>
-            </div>
-          </div>
-        </div> -->
-
 
         <div v-if="showModalColumn"
           class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
@@ -404,8 +378,9 @@ import Pagination from '@/Shared/Pagination.vue'
 import SearchFilter from '@/Shared/SearchFilter.vue'
 import Papa from 'papaparse'
 import draggable from 'vuedraggable'
-import { get } from 'lodash'
-import { icon } from '@fortawesome/fontawesome-svg-core'
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
+import { data } from 'autoprefixer'
 
 export default {
   components: {
@@ -415,6 +390,7 @@ export default {
     Pagination,
     SearchFilter,
     draggable,
+    VueDatePicker,
   },
   layout: Layout,
   props: {
@@ -423,13 +399,39 @@ export default {
     organizations: Object,
     additionalColumns: Object,
     totalContacts: Number,
+    id: String,
+  },
+  mounted() {
+    const element = document.getElementById(this.id);
+    console.log('Element:', element);
+    if (element) {
+      // Add or remove classes as needed
+      element.classList.add('bg-indigo-600');
+      element.classList.remove('text-indigo-600');
+      element.classList.add('text-white');
+    }
+
+    if (window.location.href.includes('start_date')) {
+      this.showDatePicker = true;
+    }
+
   },
   data() {
+    //this should change
+    const urlParams = new URLSearchParams(window.location.search);
+    const startDateParam = urlParams.get('start_date');
+    const endDateParam = urlParams.get('end_date');
+
+    const startDate = startDateParam ? new Date(startDateParam) : new Date();
+    const endDate = endDateParam ? new Date(endDateParam) : new Date(new Date().setDate(startDate.getDate() + 7));
+
     return {
       form: {
         search: this.filters.search,
         trashed: this.filters.trashed,
       },
+      // localTotalContacts: this.totalContacts,
+      // contacts: this.contacts.data,
       showModal: false,
       showCsvModal: false,
       PreviewModal: false,
@@ -443,6 +445,7 @@ export default {
       csvColumns: [],
       selectedDbColumns: {},
       selectedOrganization: '',
+
       columns: [
         { name: 'name', label: 'Name', additional: false },
         { name: 'organization', label: 'Organization', additional: false },
@@ -458,6 +461,18 @@ export default {
         ...contact,
         selected: false,
       })),
+      links: [
+        { name: 'Today', url: '/contacts', id: 'today', filter: 'today' },
+        { name: 'Yesterday', url: '/contacts', id: 'yesterday', filter: 'yesterday' },
+        { name: 'Last 7 days', url: '/contacts', id: 'last7days', filter: 'last7days' },
+        { name: 'Last 30 days', url: '/contacts', id: 'last30days', filter: 'last30days' },
+        { name: 'Last 90 days', url: '/contacts', id: 'last90days', filter: 'last90days' },
+        { name: 'All Time', url: '/contacts', id: 'alltime', filter: 'alltime' },
+        { name: 'Custom', url: '/contacts', id: 'custom', filter: 'custom' }
+      ],
+      date: [startDate, endDate],
+      endDate: new Date(),
+      showDatePicker: false,
     }
   },
   computed: {
@@ -475,9 +490,75 @@ export default {
         this.$inertia.get('/contacts', pickBy(this.form), { preserveState: true })
       }, 150),
     },
+    date(newDate) {
+      if (newDate && newDate.length === 2) {
+
+        var startDate = newDate[0].toLocaleDateString();
+        var endDate = newDate[1].toLocaleDateString();
+        //now make a inertia request to fetch data based on the selected date range
+        this.$inertia.post(`/contacts/home`, {
+          start_date: startDate,
+          end_date: endDate,
+          preserveScroll: true,
+        })
+
+      }
+    },
+    contacts(newContacts) {
+      this.selectedContacts = newContacts.data.map(contact => ({
+        ...contact,
+        selected: false,
+      }));
+      console.log('Contacts:', this.selectedContacts);
+    }
+    // totalContacts(newVal) {
+    //   // Update the local data when the prop changes
+    //   this.localTotalContacts = newVal;
+    // },
+    // contacts: {
+    //   deep: true, // Watch for deep changes in the object
+    //   handler(newVal) {
+    //     // Update the component's data when the prop changes
+    //     this.contacts = { ...newVal.data };
+    //   },
+    // },
   },
   methods: {
 
+    handleLinkClick(linkId, event) {
+      // const hashValue = `#${linkId}`;
+      // console.log('Setting selectedhash to:', hashValue);
+      // window.sessionStorage.setItem('selectedhash', hashValue);
+
+      // const storedHash = window.sessionStorage.getItem('selectedhash');
+      // console.log('Stored selectedhash:', storedHash);
+      // const today = document.getElementById('today');
+      // today.classList.remove('bg-indigo-600');
+      // today.classList.remove('text-white');
+      event.preventDefault(); // Prevent the default link navigation
+      this.handleLinkClick(linkId); // Call your original method with only the id
+    },
+    handleLinkClick(linkId) {
+      console.log(`Link clicked: ${linkId}`); // Debugging line
+      const link = this.links.find(link => link.id === linkId);
+      // alert(`Link clicked: ${link.filter}`); // Debugging line
+      if (link) {
+        this.$inertia.post('/contacts/home', { data: link.filter, id: link.id }, {
+          onSuccess: ({ props }) => {
+            // this.contacts = Object.assign([], props.contacts);
+            // this.totalContacts = props.totalContacts;
+            console.log('Success:', props);
+          },
+          preserveState: true,
+        });
+      }
+
+      if (linkId === 'custom') {
+        this.showDatePicker = !this.showDatePicker; // Toggle the date picker visibility
+      } else {
+        this.showDatePicker = false; // Hide it for other links
+      }
+    },
     deleteSelected() {
       this.showConfirmation = false;
 
