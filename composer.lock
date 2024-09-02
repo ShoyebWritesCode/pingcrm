@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "636e13fdf0c99a86c3629285cf481c7c",
+    "content-hash": "31cd819e48462a6be5528016d54b8aeb",
     "packages": [
         {
             "name": "brick/math",
@@ -1531,16 +1531,16 @@
         },
         {
             "name": "laravel/sanctum",
-            "version": "v4.0.1",
+            "version": "v4.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/sanctum.git",
-                "reference": "d1de99bf8d31199aaf93881561622489ab91ba58"
+                "reference": "9cfc0ce80cabad5334efff73ec856339e8ec1ac1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/sanctum/zipball/d1de99bf8d31199aaf93881561622489ab91ba58",
-                "reference": "d1de99bf8d31199aaf93881561622489ab91ba58",
+                "url": "https://api.github.com/repos/laravel/sanctum/zipball/9cfc0ce80cabad5334efff73ec856339e8ec1ac1",
+                "reference": "9cfc0ce80cabad5334efff73ec856339e8ec1ac1",
                 "shasum": ""
             },
             "require": {
@@ -1591,7 +1591,7 @@
                 "issues": "https://github.com/laravel/sanctum/issues",
                 "source": "https://github.com/laravel/sanctum"
             },
-            "time": "2024-03-19T20:09:38+00:00"
+            "time": "2024-04-10T19:39:58+00:00"
         },
         {
             "name": "laravel/serializable-closure",
@@ -6309,16 +6309,16 @@
         },
         {
             "name": "laravel/sail",
-            "version": "v1.29.1",
+            "version": "v1.31.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/sail.git",
-                "reference": "8be4a31150eab3b46af11a2e7b2c4632eefaad7e"
+                "reference": "3d06dd18cee8059baa7b388af00ba47f6d96bd85"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/sail/zipball/8be4a31150eab3b46af11a2e7b2c4632eefaad7e",
-                "reference": "8be4a31150eab3b46af11a2e7b2c4632eefaad7e",
+                "url": "https://api.github.com/repos/laravel/sail/zipball/3d06dd18cee8059baa7b388af00ba47f6d96bd85",
+                "reference": "3d06dd18cee8059baa7b388af00ba47f6d96bd85",
                 "shasum": ""
             },
             "require": {
@@ -6368,7 +6368,7 @@
                 "issues": "https://github.com/laravel/sail/issues",
                 "source": "https://github.com/laravel/sail"
             },
-            "time": "2024-03-20T20:09:31+00:00"
+            "time": "2024-08-02T07:45:47+00:00"
         },
         {
             "name": "mockery/mockery",
@@ -9407,5 +9407,5 @@
         "ext-gd": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.6.0"
 }
