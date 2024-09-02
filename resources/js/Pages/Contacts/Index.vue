@@ -6,9 +6,8 @@
       <h1 class="text-3xl font-bold">Contacts</h1>
       <div class="flex flex-col items-end w-full">
         <nav class="flex space-x-4 bg-white py-2 px-6 rounded-full mb-2">
-          <a v-for="link in links" :key="link.name" :href="link.url" :id="link.id"
-            class="text-indigo-600 target:bg-indigo-600 target:text-white px-3 py-2 rounded-full"
-            @click="handleLinkClick(link.id)">
+          <a v-for="link in links" :key="link.id" @click="handleLinkClick(link.id, $event)" href="#"
+            class="text-indigo-600 px-3 py-2 rounded-full cursor-pointer">
             {{ link.name }}
           </a>
         </nav>
@@ -381,6 +380,7 @@ import Papa from 'papaparse'
 import draggable from 'vuedraggable'
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
+import { data } from 'autoprefixer'
 
 export default {
   components: {
@@ -399,22 +399,16 @@ export default {
     organizations: Object,
     additionalColumns: Object,
     totalContacts: Number,
+    id: String,
   },
   mounted() {
-    // Check if there is a hash in the URL
-    const hash = window.location.hash;
-
-    if (hash) {
-      // Remove the '#' character from the hash
-      const elementId = hash.replace('#', '');
-      const element = document.getElementById(elementId);
-
-      if (element) {
-        // Apply styles to the element with the ID from the hash
-        element.classList.add('bg-indigo-600');
-        element.classList.remove('text-indigo-600');
-        element.classList.add('text-white');
-      }
+    const element = document.getElementById(this.id);
+    console.log('Element:', element);
+    if (element) {
+      // Add or remove classes as needed
+      element.classList.add('bg-indigo-600');
+      element.classList.remove('text-indigo-600');
+      element.classList.add('text-white');
     }
 
     if (window.location.href.includes('start_date')) {
@@ -435,6 +429,8 @@ export default {
         search: this.filters.search,
         trashed: this.filters.trashed,
       },
+      // localTotalContacts: this.totalContacts,
+      // contacts: this.contacts.data,
       showModal: false,
       showCsvModal: false,
       PreviewModal: false,
@@ -465,15 +461,13 @@ export default {
         selected: false,
       })),
       links: [
-        { name: 'Today', url: '/contacts?filter=today#today', id: 'today' },
-        { name: 'Yesterday', url: '/contacts?filter=yesterday#yesterday', id: 'yesterday' },
-        { name: 'Last 7 days', url: '/contacts?filter=last7days#last7days', id: 'last7days' },
-        { name: 'Last 30 days', url: '/contacts?filter=last30days#last30days', id: 'last30days' },
-        { name: 'Last 90 days', url: '/contacts?filter=last90days#last90days', id: 'last90days' },
-        { name: 'All Time', url: '/contacts?filter=alltime#alltime', id: 'alltime' },
-        { name: 'Custom', url: '/contacts?filter=custom#custom', id: 'custom' }
-
-
+        { name: 'Today', url: '/contacts', id: 'today', filter: 'today' },
+        { name: 'Yesterday', url: '/contacts', id: 'yesterday', filter: 'yesterday' },
+        { name: 'Last 7 days', url: '/contacts', id: 'last7days', filter: 'last7days' },
+        { name: 'Last 30 days', url: '/contacts', id: 'last30days', filter: 'last30days' },
+        { name: 'Last 90 days', url: '/contacts', id: 'last90days', filter: 'last90days' },
+        { name: 'All Time', url: '/contacts', id: 'alltime', filter: 'alltime' },
+        { name: 'Custom', url: '/contacts', id: 'custom', filter: 'custom' }
       ],
       date: [startDate, endDate],
       endDate: new Date(),
@@ -507,30 +501,61 @@ export default {
 
       }
     },
+    contacts(newContacts) {
+      this.selectedContacts = newContacts.data.map(contact => ({
+        ...contact,
+        selected: false,
+      }));
+      console.log('Contacts:', this.selectedContacts);
+    }
+    // totalContacts(newVal) {
+    //   // Update the local data when the prop changes
+    //   this.localTotalContacts = newVal;
+    // },
+    // contacts: {
+    //   deep: true, // Watch for deep changes in the object
+    //   handler(newVal) {
+    //     // Update the component's data when the prop changes
+    //     this.contacts = { ...newVal.data };
+    //   },
+    // },
   },
   methods: {
 
-    handleLinkClick(linkId) {
-      const hashValue = `#${linkId}`;
-      console.log('Setting selectedhash to:', hashValue);
-      window.sessionStorage.setItem('selectedhash', hashValue);
+    handleLinkClick(linkId, event) {
+      // const hashValue = `#${linkId}`;
+      // console.log('Setting selectedhash to:', hashValue);
+      // window.sessionStorage.setItem('selectedhash', hashValue);
 
-      // Log to confirm it's set
-      const storedHash = window.sessionStorage.getItem('selectedhash');
-      console.log('Stored selectedhash:', storedHash);
-      const today = document.getElementById('today');
-      today.classList.remove('bg-indigo-600');
-      today.classList.remove('text-white');
+      // const storedHash = window.sessionStorage.getItem('selectedhash');
+      // console.log('Stored selectedhash:', storedHash);
+      // const today = document.getElementById('today');
+      // today.classList.remove('bg-indigo-600');
+      // today.classList.remove('text-white');
+      event.preventDefault(); // Prevent the default link navigation
+      this.handleLinkClick(linkId); // Call your original method with only the id
+    },
+    handleLinkClick(linkId) {
+      alert(this.id);
+      console.log(`Link clicked: ${linkId}`); // Debugging line
+      const link = this.links.find(link => link.id === linkId);
+      // alert(`Link clicked: ${link.filter}`); // Debugging line
+      if (link) {
+        this.$inertia.post('/contacts/home', { data: link.filter, id: link.id }, {
+          onSuccess: ({ props }) => {
+            // this.contacts = Object.assign([], props.contacts);
+            // this.totalContacts = props.totalContacts;
+            console.log('Success:', props);
+          },
+          preserveState: true,
+        });
+      }
+
       if (linkId === 'custom') {
         this.showDatePicker = !this.showDatePicker; // Toggle the date picker visibility
       } else {
         this.showDatePicker = false; // Hide it for other links
       }
-    },
-    setActiveLink(linkId) {
-      this.activeLink = linkId;
-      // Optionally, you can navigate to the URL here if needed
-      window.location.href = this.links.find(link => link.id === linkId).url;
     },
     deleteSelected() {
       this.showConfirmation = false;

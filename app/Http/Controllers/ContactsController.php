@@ -13,55 +13,84 @@ use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use App\Events\CustomColumnsUpdated;
+use Illuminate\Support\Facades\Log;
 
 class ContactsController extends Controller
 {
     public function index(): Response
     {
-
-        $filter = Request::query('filter', '');
-        $startDate = Request::query('start_date');
-        $endDate = Request::query('end_date');
-        $contactsQuery = Auth::user()->account->contacts()->with('organization');
-        if ($startDate && $endDate) {
-            $contactsQuery->whereDate('created_at', '>=', $startDate)
-                ->whereDate('created_at', '<=', $endDate);
-        } else {
-            // Apply default filter
-            if ($filter === 'today') {
-                $contactsQuery->whereDate('created_at', today());
-            } elseif ($filter === 'yesterday') {
-                $contactsQuery->whereDate('created_at', today()->subDay());
-            } elseif ($filter === 'last7days') {
-                $contactsQuery->whereDate('created_at', '>=', today()->subDays(7));
-            } elseif ($filter === 'last30days') {
-                $contactsQuery->whereDate('created_at', '>=', today()->subDays(30));
-            } elseif ($filter === 'last90days') {
-                $contactsQuery->whereDate('created_at', '>=', today()->subDays(90));
-            }
+        Log::info('Store method accessed.', [
+            'request_data' => Request::all(),
+        ]);
+        $filter = Request::input('data', '');
+        $id = Request::input('id', '');
+        // $startDate = Request::query('start_date');
+        // $endDate = Request::query('end_date');
+        //set id in session
+        session(['id' => $id]);
+        if ($id == '') {
+            $id = 'today';
         }
 
+        // Initialize the base query for contacts
+        $contactsQuery = Auth::user()->account->contacts()->with('organization');
+
+        // Apply date filters if provided
+        // if ($startDate && $endDate) {
+        //     $contactsQuery->whereDate('created_at', '>=', $startDate)
+        //         ->whereDate('created_at', '<=', $endDate);
+        // } else {
+        // Apply default filters based on the 'filter' query parameter
+        $contactsQuery->when($filter === 'today', function ($query) {
+            $query->whereDate('created_at', today());
+        })->when($filter === 'yesterday', function ($query) {
+            $query->whereDate('created_at', today()->subDay());
+        })->when($filter === 'last7days', function ($query) {
+            $query->whereDate('created_at', '>=', today()->subDays(7));
+        })->when($filter === 'last30days', function ($query) {
+            $query->whereDate('created_at', '>=', today()->subDays(30));
+        })->when($filter === 'last90days', function ($query) {
+            $query->whereDate('created_at', '>=', today()->subDays(90));
+        });
+        // }
+        // Fetch organizations and custom columns
+        $organizations = Organization::all();
+        $additionalColumns = Auth::user()->account->contactCustomColumns()->get();
+
+        // Paginate the contacts
+        $contacts = $contactsQuery->orderByName()
+            ->filter(Request::only('search', 'trashed'))
+            ->paginate(10)
+            ->withQueryString()
+            ->through(fn($contact) => [
+                'id' => $contact->id,
+                'name' => $contact->name,
+                'phone' => $contact->phone,
+                'city' => $contact->city,
+                'deleted_at' => $contact->deleted_at,
+                'organization' => $contact->organization ? $contact->organization->only('name') : null,
+                'additional_data' => $contact->additional_data,
+            ]);
+
+        // Count the total contacts
+        $totalContacts = $contactsQuery->count();
+        // dd($totalContacts);
+        Log::info('ContactsController@index');
+        // Return the Inertia response
         return Inertia::render('Contacts/Index', [
-            'filters' => Request::all('search', 'trashed'),
-            'organizations' => Organization::all(),
-            'additionalColumns' => Auth::user()->account->contactCustomColumns()->get(),
-            'contacts' => $contactsQuery
-                ->orderByName()
-                ->filter(Request::only('search', 'trashed'))
-                ->paginate(10)
-                ->withQueryString()
-                ->through(fn($contact) => [
-                    'id' => $contact->id,
-                    'name' => $contact->name,
-                    'phone' => $contact->phone,
-                    'city' => $contact->city,
-                    'deleted_at' => $contact->deleted_at,
-                    'organization' => $contact->organization ? $contact->organization->only('name') : null,
-                    'additional_data' => $contact->additional_data,
-                ]),
-            'totalContacts' =>  $contactsQuery->count(),
+            'filters' => Request::only('search', 'trashed'),
+            'organizations' => $organizations,
+            'additionalColumns' => $additionalColumns,
+            'contacts' => $contacts,
+            'totalContacts' => $totalContacts,
+            'id' => session('id'),
         ]);
     }
+
+    // public function setFilter()
+    // {
+    //     return $this->index();
+    // }
 
     public function create(): Response
     {
