@@ -14,31 +14,39 @@ use Inertia\Inertia;
 use Inertia\Response;
 use App\Events\CustomColumnsUpdated;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\JsonResponse;
+use Carbon\Carbon;
 
 class ContactsController extends Controller
 {
-    public function index(): Response
+    public function index(): Response | JsonResponse
     {
         Log::info('Store method accessed.', [
             'request_data' => Request::all(),
         ]);
         $filter = Request::input('data', '');
         $id = Request::input('id', '');
-        // $startDate = Request::query('start_date');
-        // $endDate = Request::query('end_date');
+        $sDate = Request::input('start_date');
+        $eDate = Request::input('end_date');
+
+
         //set id in session
         session(['id' => $id]);
         if ($id == '') {
             $id = 'today';
         }
-
         // Initialize the base query for contacts
         $contactsQuery = Auth::user()->account->contacts()->with('organization');
+        if ($sDate && $eDate) {
+            $startDate = Carbon::createFromFormat('m/d/Y', $sDate)->format('Y-m-d');
+            $endDate = Carbon::createFromFormat('m/d/Y', $eDate)->format('Y-m-d');
 
+            $contactsQuery->whereDate('created_at', '>=', $startDate)
+                ->whereDate('created_at', '<=', $endDate);
+            // return response()->json($contactsQuery);
+        }
         // Apply date filters if provided
         // if ($startDate && $endDate) {
-        //     $contactsQuery->whereDate('created_at', '>=', $startDate)
-        //         ->whereDate('created_at', '<=', $endDate);
         // } else {
         // Apply default filters based on the 'filter' query parameter
         $contactsQuery->when($filter === 'today', function ($query) {

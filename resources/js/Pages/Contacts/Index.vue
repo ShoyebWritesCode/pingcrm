@@ -257,7 +257,7 @@
                     <th v-for="csvColumn in csvColumns" :key="csvColumn" class="border-b font-bold text-left p-2">
                       <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">{{
                         matchingColumn(csvColumn) ? matchingColumn(csvColumn).name : selectedDbColumns[csvColumn]
-                        }}</span>
+                      }}</span>
                     </th>
                   </tr>
                 </thead>
@@ -266,7 +266,7 @@
                     <td v-for="csvColumn in csvColumns" :key="csvColumn" class="border-b p-2">
                       <span v-if="selectedDbColumns[csvColumn] || matchingColumn(csvColumn)">{{
                         getValueForColumn(row, csvColumn) !== 'N/A' ? getValueForColumn(row, csvColumn) : ''
-                        }}</span>
+                      }}</span>
                     </td>
                   </tr>
                 </tbody>
@@ -417,6 +417,7 @@ export default {
 
   },
   data() {
+    //this should change
     const urlParams = new URLSearchParams(window.location.search);
     const startDateParam = urlParams.get('start_date');
     const endDateParam = urlParams.get('end_date');
@@ -495,9 +496,11 @@ export default {
         var startDate = newDate[0].toLocaleDateString();
         var endDate = newDate[1].toLocaleDateString();
         //now make a inertia request to fetch data based on the selected date range
-        this.$inertia.get(`/contacts?start_date=${startDate}&end_date=${endDate}`, {
+        this.$inertia.post(`/contacts/home`, {
+          start_date: startDate,
+          end_date: endDate,
           preserveScroll: true,
-        });
+        })
 
       }
     },
@@ -536,7 +539,6 @@ export default {
       this.handleLinkClick(linkId); // Call your original method with only the id
     },
     handleLinkClick(linkId) {
-      alert(this.id);
       console.log(`Link clicked: ${linkId}`); // Debugging line
       const link = this.links.find(link => link.id === linkId);
       // alert(`Link clicked: ${link.filter}`); // Debugging line
